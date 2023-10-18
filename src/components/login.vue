@@ -71,13 +71,9 @@ export default {
   max-height: 230px;
 
 }
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
+
 body {
-  background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2i85hzz13fkacRTHYMtxuI4DvD1gMaRaxvw&usqp=CAU");
+ /*  background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2i85hzz13fkacRTHYMtxuI4DvD1gMaRaxvw&usqp=CAU"); */
   max-width: 100%;
   max-height: 100%;
   background-size: cover;
