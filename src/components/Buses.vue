@@ -16,6 +16,23 @@
                 </template>
             </q-table>
         </div>
+        <q-dialog v-model="mostrarModalAgregar">
+            <q-card>
+                <q-card-section>
+                    <q-form @submit="agregarNuevoBus">
+                        <q-input v-model="nuevoBus.placa" label="Placa"></q-input>
+                        <q-input v-model="nuevoBus.numero_bus" label="Número de bus"></q-input>
+                        <q-input v-model="nuevoBus.cantidad_asientos" label="Cantidad de asientos"></q-input>
+                        <q-input v-model="nuevoBus.empresa_asignada" label="Empresa asignada"></q-input>
+                        <q-btn label="Guardar" color="primary" type="submit"></q-btn>
+                    </q-form>
+                </q-card-section>
+                <q-card-actions align="right">
+                    <q-btn label="Cerrar" color="secondary" @click="cerrarModalAgregar"></q-btn>
+                </q-card-actions>
+            </q-card>
+        </q-dialog>
+
         <button><router-link to="/Card">Volver</router-link></button>
         <router-view></router-view>
 
@@ -133,6 +150,18 @@ function cerrarModalAgregar() {
     mostrarModalAgregar.value = false;
 }
 
+function agregarNuevoBus() { //CORREGIR AGREGAR
+    axios
+        .post(`${API_URL}/agregar`, nuevoBus.value)
+        .then((response) => {
+            rows.value.push(response.data.bus);
+            cerrarModalAgregar();
+        })
+        .catch((error) => {
+            console.error('Error al agregar el bus:', error);
+        });
+}
+
 function abrirModalEditar(bus) {
     console.log('Abriendo modal de edición', bus);
     busEditado.value = { ...bus };
@@ -143,30 +172,34 @@ function cerrarModalEditar() {
     mostrarModalEditar.value = false;
 }
 
-function editarFila() {
-    const { cantidad_asientos, empresa_asignada } = busEditado.value;
+function editarFila() { //CORREGIR EDITAR
+    const id = busEditado.value.id; 
+    if (id) {
+        const { cantidad_asientos, empresa_asignada } = busEditado.value;
 
-    const cambios = {
-        cantidad_asientos,
-        empresa_asignada
-    };
+        const cambios = {
+            cantidad_asientos,
+            empresa_asignada
+        };
 
-    axios.put(`${API_URL}/bus/${id}`, cambios)
-        .then(() => {
-            const filaEditada = buses.value.find((bus) => bus.id === id);
-            if (filaEditada) {
-                Object.assign(filaEditada, cambios);
-            }
-            cerrarModalEditar();
-        })
-        .catch((error) => {
-            console.error('Error al editar la fila:', error);
-        });
+        axios
+            .put(`${API_URL}/bus/${id}`, cambios)
+            .then(() => {
+                const filaEditada = rows.value.find((bus) => bus.id === id);
+                if (filaEditada) {
+                    Object.assign(filaEditada, cambios);
+                }
+                cerrarModalEditar();
+            })
+            .catch((error) => {
+                console.error('Error al editar la fila:', error);
+            });
+    }
 }
 
 
 
-function inactivarBus(bus) {
+function inactivarBus(bus) { //MEJORAR CAMBIO DE ESTADO
     axios.put(`${API_URL}/bus/${bus.numero_bus}`, { estado: false })
         .then(() => {
             bus.estado = false;
