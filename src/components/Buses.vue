@@ -16,7 +16,7 @@
                 </template>
             </q-table>
         </div>
-        <button><router-link to="/">Volver</router-link></button>
+        <button><router-link to="/Card">Volver</router-link></button>
         <router-view></router-view>
 
         <q-dialog v-model="mostrarModalEditar">
