@@ -1,59 +1,153 @@
 <template>
-    <q-layout view="hHh lpR lFf">
+  <q-layout view="hHh lpR lFf">
+    <q-header elevated class="bg-primary text-white">
+      <q-toolbar>
+        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
 
-        <q-header elevated class="bg-primary text-white">
-            <q-toolbar>
-                <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
+        <q-toolbar-title>
+          <q-icon name="share_location" style="font-size: 2.5rem" />
+          Transporte
+        </q-toolbar-title>
+      </q-toolbar>
+    </q-header>
 
-                <q-toolbar-title>
-                    <q-avatar>
-                        <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg">
-                    </q-avatar>
-                    Title
-                </q-toolbar-title>
-            </q-toolbar>
-        </q-header>
+    <q-drawer
+      v-model="leftDrawerOpen"
+      side="left"
+      overlay
+      style="background-color: #242424"
+    >
+      <q-scroll-area
+        style="
+          height: calc(100% - 150px);
+          margin-top: 150px;
+          border-right: 1px solid #242424;
+        "
+      >
+        <q-list padding>
+          <q-item active clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon style="font-size: 2.5rem" name="home_work" />
+            </q-item-section>
 
-        <q-drawer v-model="leftDrawerOpen" side="left" overlay bordered>
-            <q-avatar>
-                <img src="../assets/user.png">
-            </q-avatar>
-            <q-toolbar-title>
-                <div>Nombre usuario</div>
-            </q-toolbar-title>
-            <button><router-link to="/Buses">Buses</router-link></button>
-            <!-- <button><router-link to="/Card">Volver</router-link></button> -->
-        </q-drawer>
+            <q-item-section> <router-link to="/Card">Home</router-link> </q-item-section>
+          </q-item>
 
-        <q-page-container>
-            <router-view />
-        </q-page-container>
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon style="font-size: 2.5rem" name="directions_bus" />
+            </q-item-section>
 
-        <q-footer elevated class="bg-grey-8 text-white">
-            <q-toolbar>
-                <q-toolbar-title>
-                    <div>Transporte 2023</div>
-                </q-toolbar-title>
-            </q-toolbar>
-        </q-footer>
+            <q-item-section>
+              <router-link to="/Buses">Buses</router-link>
+            </q-item-section>
+          </q-item>
 
-    </q-layout>
-    
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon style="font-size: 2.5rem" name="people_alt" />
+            </q-item-section>
+
+            <q-item-section> Clientes </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon style="font-size: 2.5rem" name="badge" />
+            </q-item-section>
+
+            <q-item-section> Conductores </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon style="font-size: 2.5rem" name="today" />
+            </q-item-section>
+
+            <q-item-section> Horarios </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon style="font-size: 2.5rem" name="fork_right" />
+            </q-item-section>
+
+            <q-item-section> Rutas </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon style="font-size: 2.5rem" name="confirmation_number" />
+            </q-item-section>
+
+            <q-item-section> Tickets </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon style="font-size: 2.5rem" name="point_of_sale" />
+            </q-item-section>
+
+            <q-item-section> Vendedores </q-item-section>
+          </q-item>
+
+          <q-item clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon style="font-size: 2.5rem" name="payments" />
+            </q-item-section>
+
+            <q-item-section> Ventas </q-item-section>
+          </q-item>
+        </q-list>
+      </q-scroll-area>
+
+      <q-img
+        class="absolute-top"
+        src="https://cdn.quasar.dev/img/material.png"
+        style="height: 150px"
+      >
+        <div class="absolute-bottom bg-transparent">
+          <q-avatar size="56px" class="q-mb-sm">
+            <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
+          </q-avatar>
+          <div class="text-weight-bold">Razvan Stoenescu</div>
+          <div>@rstoenescu</div>
+        </div>
+      </q-img>
+    </q-drawer>
+
+    <q-page-container>
+      <router-view />
+    </q-page-container>
+
+    <q-footer elevated class="bg-grey-8 text-white">
+      <q-toolbar>
+        <q-toolbar-title>
+          <div>Transporte 2023</div>
+        </q-toolbar-title>
+      </q-toolbar>
+    </q-footer>
+  </q-layout>
 </template>
-  
+
 <script>
-import { ref } from 'vue'
+import { ref } from "vue";
 
 export default {
-    setup() {
-        const leftDrawerOpen = ref(false)
+  setup() {
+    const leftDrawerOpen = ref(false);
 
-        return {
-            leftDrawerOpen,
-            toggleLeftDrawer() {
-                leftDrawerOpen.value = !leftDrawerOpen.value
-            }
-        }
-    }
-}
+    return {
+      leftDrawerOpen,
+      toggleLeftDrawer() {
+        leftDrawerOpen.value = !leftDrawerOpen.value;
+      },
+    };
+  },
+};
 </script>
+<style scoped>
+.q-drawer--left.q-drawer--bordered {
+  border-right: 0px solid rgba(0, 0, 0, 0.12);
+}
+</style>
