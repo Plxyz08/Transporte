@@ -6,7 +6,6 @@ import Card from "../components/Card.vue";
 
 
 import { createRouter, createWebHashHistory } from "vue-router"
-import { info } from "sass";
 
 const routes = [
     { path: "/", component: Main },

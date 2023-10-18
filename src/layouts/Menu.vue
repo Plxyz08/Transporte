@@ -8,6 +8,8 @@
           <q-icon name="share_location" style="font-size: 2.5rem" />
           Transporte
         </q-toolbar-title>
+
+        <q-btn dense flat round icon="logout" @click="" />
       </q-toolbar>
     </q-header>
 
@@ -123,7 +125,7 @@
     <q-footer elevated class="bg-grey-8 text-white">
       <q-toolbar>
         <q-toolbar-title>
-          <div>Transporte 2023</div>
+          <div><span>&copy; 2023 - Todos los derechos reservados</span></div>
         </q-toolbar-title>
       </q-toolbar>
     </q-footer>
