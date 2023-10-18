@@ -55,6 +55,8 @@
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import { format } from 'date-fns';
+import { useBusStore } from '../stores/buses'; 
+const busStore = useBusStore()
 
 const rows = ref([]);
 const nuevoBus = ref({
@@ -67,21 +69,6 @@ const mostrarModalAgregar = ref(false);
 const mostrarModalEditar = ref(false);
 const busEditado = ref({});
 
-const API_URL = 'https://transporte-czaa.onrender.com/api/bus';
-
-async function obtenerinfo() {
-    try {
-        const apiUrl = `${API_URL}/buses`;
-        let response = await axios.get(apiUrl);
-        rows.value = response.data.buses;
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-onMounted(() => {
-    obtenerinfo();
-});
 
 const columns = [
     {
@@ -150,6 +137,30 @@ function cerrarModalAgregar() {
     mostrarModalAgregar.value = false;
 }
 
+function abrirModalEditar(bus) {
+    console.log('Abriendo modal de edición', bus);
+    busEditado.value = { ...bus };
+    mostrarModalEditar.value = true;
+}
+
+function cerrarModalEditar() {
+    mostrarModalEditar.value = false;
+}
+
+async function obtenerinfo() {
+    try {
+        await busStore.obtenerInfoBuses()
+        rows.value = busStore.buses
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+onMounted(() => {
+    obtenerinfo();
+});
+
+
 function agregarNuevoBus() { //CORREGIR AGREGAR
     axios
         .post(`${API_URL}/agregar`, nuevoBus.value)
@@ -162,15 +173,6 @@ function agregarNuevoBus() { //CORREGIR AGREGAR
         });
 }
 
-function abrirModalEditar(bus) {
-    console.log('Abriendo modal de edición', bus);
-    busEditado.value = { ...bus };
-    mostrarModalEditar.value = true;
-}
-
-function cerrarModalEditar() {
-    mostrarModalEditar.value = false;
-}
 
 function editarFila() { //CORREGIR EDITAR
     const id = busEditado.value.id; 
