@@ -62,12 +62,12 @@ export default {
             <span v-if="useAdmin.loading">Iniciar</span>
             <q-spinner-radio v-else/>
           </q-btn> -->
-          <!-- <q-btn :loading="useAdmin.loading" color="purple" @click="iniciar()">
+          <q-btn :loading="useAdmin.loading" color="purple" @click="iniciar()">
             Button
             <template v-slot:loading>
               <q-spinner-radio />
             </template>
-          </q-btn> -->
+          </q-btn> 
         </div>
       </q-card-section>
     </q-card>

@@ -11,17 +11,17 @@ export const useAdminStore = defineStore ("admin",()=>{
         console.log(clave)
         
         try{
-            loading=true
+            loading.value=true
             const r = await axios.post("/vendedor/vendedor_datos",{cuenta:cuenta, clave:clave});
             console.log(r)
             token= r.data.token
             return r
         }catch (error){
-            loading=true
+            loading.value=true
             console.log(error);
             return error
         }finally{
-            loading=false
+            loading.value=false
         }
     }
     return{
