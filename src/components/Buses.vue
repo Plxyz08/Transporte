@@ -1,216 +1,171 @@
 <template>
     <div>
-        <q-btn color="primary" @click="abrirModalAgregar">Agregar</q-btn>
-        <div class="q-pa-md">
-            <q-table title="Buses" :rows="rows" :columns="columns" row-key="numero_bus">
-                <template v-slot:body-cell-opciones="props">
-                    <div class="q-td opciones">
-                        <q-btn color="primary" class="opcion-btn" @click="abrirModalEditar(props.row)">
-                            🖋️
-                        </q-btn>
+        <q-dialog v-model="fixed">
+            <q-card class="modal-content">
+                <q-card-section class="row items-center q-pb-none" style="color: black;">
+                    <div class="text-h6">{{ text }}</div>
+                    <q-space />
+                    <q-btn icon="close" flat round dense v-close-popup />
+                </q-card-section>
+                <q-separator />
 
-                        <q-btn color="secondary" class="opcion-btn" @click="inactivarBus(props.row)">
-                            ❌
-                        </q-btn>
-                    </div>
+                <q-card-section style="max-height: 50vh" class="scroll">
+                    <q-input v-model="placa" label="Placa" style="width: 300px;" v-if="cambio == 0" />
+                    <q-input v-model="numero_bus" label="Número de Bus" style="width: 300px;" v-if="cambio == 0" />
+                    <q-input v-model="placa" label="Placa" style="width: 300px;" />
+                    <q-input v-model="numero_bus" label="Numero Bus" style="width: 300px;" />
+                    <q-input v-model="cantidad_asientos" label="Cantidad de Asientos" style="width: 300px;" />
+                    <q-input v-model="empresa_asignada" label="Empresa Asignada" style="width: 300px;" />
+                </q-card-section>
+
+                <q-separator />
+
+                <q-card-actions align="right">
+                    <q-btn flat label="Cerrar" color="primary" v-close-popup />
+                    <q-btn flat label="Guardar" color="primary" @click="agregarEditarBus" />
+                </q-card-actions>
+            </q-card>
+        </q-dialog>
+        <div>
+            <h3>Buses</h3>
+            <div class="btn-agregar" style="margin-bottom: 5%;">
+                <q-btn color="primary" label="Agregar" @click="agregarBus()" />
+            </div>
+            <q-table title="Buses" :rows="rows" :columns="columns" row-key="name">
+                <template v-slot:body-cell-estado="props">
+                    <q-td :props="props">
+                        <label for="" v-if="props.row.estado == 1" style="color: green;">Activo</label>
+                        <label for="" v-else style="color: red;">Inactivo</label>
+                    </q-td>
+                </template>
+                <template v-slot:body-cell-opciones="props">
+                    <q-td :props="props" class="botones">
+                        <q-btn color="blue-4" style="margin-right: 5px;" text-color="black" @click="EditarBus(props.row._id)"><q-icon name ="edit"/></q-btn> 
+                        <q-btn color="green-4" glossy  @click="InactivarBus(props.row._id)"
+                            v-if="props.row.estado == 1" ><q-icon name ="toggle_on"/></q-btn> 
+                        <q-btn color="red-4" glossy @click="ActivarBus(props.row._id)" v-else ><q-icon name ="toggle_off"/></q-btn> 
+                    </q-td>
                 </template>
             </q-table>
         </div>
-        <q-dialog v-model="mostrarModalAgregar">
-            <q-card>
-                <q-card-section>
-                    <q-form @submit="agregarNuevoBus">
-                        <q-input v-model="nuevoBus.placa" label="Placa"></q-input>
-                        <q-input v-model="nuevoBus.numero_bus" label="Número de bus"></q-input>
-                        <q-input v-model="nuevoBus.cantidad_asientos" label="Cantidad de asientos"></q-input>
-                        <q-input v-model="nuevoBus.empresa_asignada" label="Empresa asignada"></q-input>
-                        <q-btn label="Guardar" color="primary" type="submit"></q-btn>
-                    </q-form>
-                </q-card-section>
-                <q-card-actions align="right">
-                    <q-btn label="Cerrar" color="secondary" @click="cerrarModalAgregar"></q-btn>
-                </q-card-actions>
-            </q-card>
-        </q-dialog>
-
-        <button><router-link to="/Card">Volver</router-link></button>
-        <router-view></router-view>
-
-        <q-dialog v-model="mostrarModalEditar">
-            <q-card>
-                <q-card-section>
-                    <q-input v-model="busEditado.cantidad_asientos" label="Cantidad de asientos"></q-input>
-                    <q-input v-model="busEditado.empresa_asignada" label="Empresa asignada"></q-input>
-                </q-card-section>
-                <q-card-actions align="right">
-                    <q-btn label="Guardar Cambios" color="primary" @click="editarFila"></q-btn>
-                    <q-btn label="Cerrar" color="secondary" @click="cerrarModalEditar"></q-btn>
-                </q-card-actions>
-            </q-card>
-        </q-dialog>
     </div>
 </template>
 
 <script setup>
 import axios from 'axios';
-import { onMounted, ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { format } from 'date-fns';
-import { useBusStore } from '../stores/buses'; 
+import { useBusStore } from '../stores/buses.js';
 const busStore = useBusStore()
 
-const rows = ref([]);
-const nuevoBus = ref({
-    placa: '',
-    numero_bus: '',
-    cantidad_asientos: '',
-    empresa_asignada: '',
-});
-const mostrarModalAgregar = ref(false);
-const mostrarModalEditar = ref(false);
-const busEditado = ref({});
+let buses = ref([]);
+let rows = ref([]);
+let fixed = ref(false)
+let text = ref('')
+let placa = ref('');
+let numero_bus = ref();
+let cantidad_asientos = ref('');
+let empresa_asignada = ref('');
+let cambio = ref(0)
 
-
-const columns = [
-    {
-        name: 'placa',
-        required: true,
-        label: 'Placa',
-        align: 'left',
-        field: 'placa',
-        sortable: true,
-    },
-    {
-        name: 'numero_bus',
-        required: true,
-        label: 'Numero de bus',
-        align: 'left',
-        field: 'numero_bus',
-        sortable: true,
-    },
-    {
-        name: 'cantidad_asientos',
-        required: true,
-        label: 'Cantidad de asientos',
-        align: 'left',
-        field: 'cantidad_asientos',
-        sortable: true,
-    },
-    {
-        name: 'empresa_asignada',
-        required: true,
-        label: 'Empresa asignada',
-        align: 'left',
-        field: 'empresa_asignada',
-        sortable: true,
-    },
-    {
-        name: 'estado',
-        required: true,
-        label: 'Estado',
-        align: 'left',
-        field: 'estado',
-        sortable: true,
-        format: (val) => (val ? 'Activo' : 'Inactivo'),
-    },
-    {
-        name: 'fecha_creacion',
-        required: true,
-        label: 'Fecha de creación',
-        align: 'left',
-        field: 'createAT',
-        sortable: true,
-        format: (val) => format(new Date(val), 'yyyy-MM-dd'),
-    },
-    {
-        name: 'opciones',
-        label: 'Opciones',
-        align: 'center',
-    },
-];
-
-
-function abrirModalAgregar() {
-    mostrarModalAgregar.value = true;
-}
-
-function cerrarModalAgregar() {
-    mostrarModalAgregar.value = false;
-}
-
-function abrirModalEditar(bus) {
-    console.log('Abriendo modal de edición', bus);
-    busEditado.value = { ...bus };
-    mostrarModalEditar.value = true;
-}
-
-function cerrarModalEditar() {
-    mostrarModalEditar.value = false;
-}
-
-async function obtenerinfo() {
+async function obtenerInfo() {
     try {
-        await busStore.obtenerInfoBuses()
-        rows.value = busStore.buses
+        await busStore.getBuses();
+        buses.value = busStore.buses;
+        rows.value = busStore.buses;
     } catch (error) {
         console.log(error);
     }
 }
 
-onMounted(() => {
-    obtenerinfo();
+onMounted(async () => {
+    obtenerInfo()
 });
 
+const columns = [
+    { name: 'placa', label: 'Placa', field: 'placa', sortable: true },
+    { name: 'numero_bus', label: 'Número de Bus', field: 'numero_bus', sortable: true },
+    { name: 'cantidad_asientos', label: 'Cantidad de Asientos', field: 'cantidad_asientos' },
+    { name: 'empresa_asignada', label: 'Empresa Asignada', field: 'empresa_asignada' },
+    { name: 'estado', label: 'Estado', field: 'estado', sortable: true, format: (val) => (val ? 'Activo' : 'Inactivo') },
+    {
+        name: 'createAT', label: 'Fecha de Creación', field: 'createAT', sortable: true,
+        format: (val) => format(new Date(val), 'yyyy-MM-dd')
+    },
+    {
+        name: 'opciones', label: 'Opciones',
+        field: row => null,
+        "sortable": false,
+    },
+];
 
-function agregarNuevoBus() { //CORREGIR AGREGAR
-    axios
-        .post(`${API_URL}/agregar`, nuevoBus.value)
-        .then((response) => {
-            rows.value.push(response.data.bus);
-            cerrarModalAgregar();
-        })
-        .catch((error) => {
-            console.error('Error al agregar el bus:', error);
-        });
+function agregarBus() {
+    fixed.value = true;
+    text.value = "Agregar Bus";
+    cambio.value = 0
+    limpiar();
 }
 
-
-function editarFila() { //CORREGIR EDITAR
-    const id = busEditado.value.id; 
-    if (id) {
-        const { cantidad_asientos, empresa_asignada } = busEditado.value;
-
-        const cambios = {
-            cantidad_asientos,
-            empresa_asignada
-        };
-
-        axios
-            .put(`${API_URL}/bus/${id}`, cambios)
-            .then(() => {
-                const filaEditada = rows.value.find((bus) => bus.id === id);
-                if (filaEditada) {
-                    Object.assign(filaEditada, cambios);
-                }
-                cerrarModalEditar();
-            })
-            .catch((error) => {
-                console.error('Error al editar la fila:', error);
+async function agregarEditarBus() {
+    if (cambio.value === 0) {
+        await busStore.postBus({
+            placa: placa.value,
+            numero_bus: numero_bus.value,
+            cantidad_asientos: cantidad_asientos.value,
+            empresa_asignada: empresa_asignada.value,
+        });
+        limpiar();
+        obtenerInfo();
+        fixed.value = false;
+    } else {
+        let id = idBus.value;
+        if (id) {
+            await busStore.putEditarBus(id, {
+                placa: placa.value,
+                numero_bus: numero_bus.value,            
+                cantidad_asientos: cantidad_asientos.value,
+                empresa_asignada: empresa_asignada.value,
             });
+            limpiar();
+            obtenerInfo();
+            fixed.value = false;
+        }
     }
 }
 
+function limpiar() {
+    placa.value = "";
+    numero_bus.value = "";
+    cantidad_asientos.value = "";
+    empresa_asignada.value = "";
+}
 
+let idBus = ref('');
+async function EditarBus(id) {
+    cambio.value = 1;
+    const busSeleccionado = buses.value.find((bus) => bus._id === id);
+    if (busSeleccionado) {
+        idBus.value = String(busSeleccionado._id);
+        fixed.value = true;
+        text.value = "Editar Bus";
+        placa.value = busSeleccionado.placa;
+        numero_bus.value = busSeleccionado.numero_bus;
+        cantidad_asientos.value = busSeleccionado.cantidad_asientos;
+        empresa_asignada.value = busSeleccionado.empresa_asignada;
+    }
+}
 
-function inactivarBus(bus) { //MEJORAR CAMBIO DE ESTADO
-    axios.put(`${API_URL}/bus/${bus.numero_bus}`, { estado: false })
-        .then(() => {
-            bus.estado = false;
-        })
-        .catch((error) => {
-            console.error('Error al inactivar el bus:', error);
-        });
+async function InactivarBus(id) {
+    await busStore.putInactivarBus(id);
+    obtenerInfo();
+}
+
+async function ActivarBus(id) {
+    await busStore.putActivarBus(id);
+    obtenerInfo();
 }
 </script>
+
 
 <style scoped>
 .q-table-container .q-td.opciones {
