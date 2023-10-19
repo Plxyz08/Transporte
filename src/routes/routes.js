@@ -1,6 +1,6 @@
 import Main from "../components/Main.vue";
 import Buses from "../components/Buses.vue";
-import Login from "../components/Login.vue";
+import Login from "../components/login.vue";
 import Menu from "../layouts/Menu.vue";
 import Card from "../components/Card.vue";
 
