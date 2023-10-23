@@ -21,23 +21,24 @@ export default {
         $q.notify({
           type: 'negative',
           message: res.response.data.msg
-        })
-
+        });
       } else {
         console.log("entra");
-        router.push("/Buses")
+        router.push("/Buses");
         $q.notify({
           type: 'positive',
-          message: 'This is a "positive" type notification.'
-        })
+          message: 'Inicio Exitoso'
+        });
       }
+
 
     }
 
     return {
       iniciar,
       cuenta,
-      clave
+      clave,
+      useAdmin,
     };
   }
 };
@@ -51,7 +52,7 @@ export default {
         class="image-style" />
 
       <q-card-section>
-        
+
         <div class="text-h5 q-mt-sm q-mb-xs" style="margin-bottom:20px;"><b>Bienvenido</b></div>
         <div class="text-caption text-grey">
           <input type="text" v-model="cuenta" name="cajaTexto" placeholder="cuenta"
@@ -62,12 +63,19 @@ export default {
             <span v-if="useAdmin.loading">Iniciar</span>
             <q-spinner-radio v-else/>
           </q-btn> -->
+          <!-- <q-btn :loading="useAdmin.loading" color="purple" @click="iniciar()">
+            Button
+            <template v-slot:useAdmin.loading>
+              <q-spinner-radio />
+            </template>
+          </q-btn>  -->
           <q-btn :loading="useAdmin.loading" color="purple" @click="iniciar()">
             Button
             <template v-slot:loading>
               <q-spinner-radio />
             </template>
-          </q-btn> 
+          </q-btn>
+
         </div>
       </q-card-section>
     </q-card>
@@ -89,7 +97,7 @@ export default {
 }
 
 body {
-  background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2i85hzz13fkacRTHYMtxuI4DvD1gMaRaxvw&usqp=CAU"); 
+  /* background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2i85hzz13fkacRTHYMtxuI4DvD1gMaRaxvw&usqp=CAU");  */
   max-width: 100%;
   max-height: 100%;
   background-size: cover;
