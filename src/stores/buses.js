@@ -5,6 +5,7 @@ import { ref } from 'vue';
 
 export const useBusStore = defineStore('bus', () => {
     const buses = ref([])
+    const searchPlaca = ref('');
     const getBuses = async () => {
         try {
             let res = await axios.get(`/bus/buses`);
@@ -50,6 +51,7 @@ export const useBusStore = defineStore('bus', () => {
 
     return {
         buses,
+        searchPlaca,
         getBuses, postBus, putEditarBus, putInactivarBus, putActivarBus
     };
 });

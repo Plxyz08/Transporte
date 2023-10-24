@@ -6,13 +6,15 @@ import Horarios from "../components/Horario.vue";
 import Menu from "../layouts/Menu.vue";
 import Card from "../components/Card.vue";
 import Tiquetes from "../components/Tiquetes.vue";
+import Conductores from "../components/Conductores.vue";
+import Rutas from "../components/Rutas.vue";
 
 
 
 import { createRouter, createWebHashHistory } from "vue-router"
 
 const routes = [
-    { path: "/", component: Main },
+    { path: "/", component: Login },
     { path: "/Login", component: Login },
     {
         path: "/Menu", component: Menu,
@@ -22,7 +24,8 @@ const routes = [
             { path: "/Clientes", component: Clientes },
             { path: "/Horarios", component: Horarios },
             { path: "/Tiquetes", component: Tiquetes },
-
+            { path: "/Conductores", component: Conductores },
+            { path: "/Rutas", component: Rutas },
         ]
     },
 ]

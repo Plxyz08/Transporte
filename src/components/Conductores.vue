@@ -12,38 +12,34 @@
         <q-card-section style="max-height: 50vh" class="scroll">
           <q-input
             v-model="cedula"
-            label="cedula"
+            label="Cedula"
             style="width: 300px"
             v-if="cambio == 0"
           />
           <q-input
             v-model="nombre"
-            label="nombre"
+            label="Nombre"
             style="width: 300px"
             v-if="cambio == 0"
           />
-          <q-input v-model="telefono" label="telefono" style="width: 300px" />
+          <q-input v-model="experiencia" label="Experiencia" style="width: 300px" />
+          <q-input v-model="telefono" label="Telefono" style="width: 300px" />
         </q-card-section>
-                <q-card-section style="max-height: 50vh" class="scroll">
-                    <q-input v-model="cedula" label="cedula" style="width: 300px;"  />
-                    <q-input v-model="nombre" label="nombre" style="width: 300px;"  />
-                    <q-input v-model="telefono" label="telefono" style="width: 300px;" />
-                </q-card-section>
 
         <q-separator />
 
         <q-card-actions align="right">
           <q-btn flat label="Cerrar" color="primary" v-close-popup />
-          <q-btn flat label="Guardar" color="primary" @click="agregarEditarCliente" />
+          <q-btn flat label="Guardar" color="primary" @click="agregarEditarConductor" />
         </q-card-actions>
       </q-card>
     </q-dialog>
     <div>
-      <h3>Clientes</h3>
+      <h3>Conductores</h3>
       <div class="btn-agregar" style="margin-bottom: 5%">
-        <q-btn color="primary" label="Agregar" @click="agregarCliente()" />
+        <q-btn color="primary" name="add" label="Agregar" @click="agregarConductor()" />
       </div>
-      <q-table title="Clientes" :rows="rows" :columns="columns" row-key="name">
+      <q-table title="Conductores" :rows="rows" :columns="columns" row-key="name">
         <template v-slot:body-cell-estado="props">
           <q-td :props="props">
             <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
@@ -56,17 +52,17 @@
               color="blue-4"
               style="margin-right: 5px"
               text-color="black"
-              @click="EditarCliente(props.row._id)"
+              @click="EditarConductor(props.row._id)"
               ><q-icon name="edit"
             /></q-btn>
             <q-btn
               color="green-4"
               glossy
-              @click="InactivarCliente(props.row._id)"
+              @click="InactivarConductor(props.row._id)"
               v-if="props.row.estado == 1"
               ><q-icon name="toggle_on"
             /></q-btn>
-            <q-btn color="red-4" glossy @click="ActivarCliente(props.row._id)" v-else
+            <q-btn color="red-4" glossy @click="ActivarConductors(props.row._id)" v-else
               ><q-icon name="toggle_off"
             /></q-btn>
           </q-td>
@@ -75,30 +71,30 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import axios from "axios";
 import { ref, onMounted } from "vue";
 import { format } from "date-fns";
-import { useClienteStore } from "../stores/clientes.js";
-const ClienteStore = useClienteStore();
+import { useConductorStore } from "../stores/conductores.js";
+const conductorStore = useConductorStore();
 
-let clientes = ref([]);
+let conductores = ref([]);
 let rows = ref([]);
 let fixed = ref(false);
 let text = ref("");
 let cedula = ref("");
 let nombre = ref();
+let experiencia = ref("");
 let telefono = ref("");
 let cambio = ref(0);
 
 async function obtenerInfo() {
   try {
-    await ClienteStore.getCliente();
-    clientes.value = ClienteStore.clientes;
-    rows.value = ClienteStore.clientes;
+    await conductorStore.getConductor();
+    conductores.value = conductorStore.conductores;
+    rows.value = conductorStore.conductores;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -109,6 +105,7 @@ onMounted(async () => {
 const columns = [
   { name: "cedula", label: "Cedula", field: "cedula", sortable: true },
   { name: "nombre", label: "Nombre", field: "nombre", sortable: true },
+  { name: "experiencia", label: "Experiencia", field: "experiencia" },
   { name: "telefono", label: "Telefono", field: "telefono" },
   {
     name: "estado",
@@ -132,29 +129,31 @@ const columns = [
   },
 ];
 
-function agregarCliente() {
+function agregarConductor() {
   fixed.value = true;
-  text.value = "Agregar Cliente";
+  text.value = "Agregar Conductor";
   cambio.value = 0;
   limpiar();
 }
 
-async function agregarEditarCliente() {
+async function agregarEditarConductor() {
   if (cambio.value === 0) {
-    await ClienteStore.postCliente({
+    await busStore.postConductor({
       cedula: cedula.value,
       nombre: nombre.value,
+      experiencia: experiencia.value,
       telefono: telefono.value,
     });
     limpiar();
     obtenerInfo();
     fixed.value = false;
   } else {
-    let id = idCliente.value;
+    let id = idConductor.value;
     if (id) {
-      await ClienteStore.putCliente(id, {
+      conductorStore.putEditarConductor(id, {
         cedula: cedula.value,
         nombre: nombre.value,
+        experiencia: experiencia.value,
         telefono: telefono.value,
       });
       limpiar();
@@ -167,40 +166,34 @@ async function agregarEditarCliente() {
 function limpiar() {
   cedula.value = "";
   nombre.value = "";
+  experiencia.value = "";
   telefono.value = "";
 }
 
-let idCliente = ref("");
-async function EditarCliente(id) {
-    cambio.value = 1;
-    const clienteSeleccionado = clientes.value.find((cliente) => cliente._id === id);
-    if (clienteSeleccionado) {
-        idCliente.value = String(clienteSeleccionado._id);
-        fixed.value = true;
-        text.value = "Editar Cliente";
-        cedula.value = clienteSeleccionado.cedula;
-        nombre.value = clienteSeleccionado.nombre;
-        telefono.value = clienteSeleccionado.telefono;
-    }
+let idConductor = ref("");
+async function EditarConductor(id) {
+  cambio.value = 1;
+  const conductorSeleccionado = conductores.value.find(
+    (conductor) => conductor._id === id
+  );
+  if (conductorSeleccionado) {
+    idConductor.value = String(conductorSeleccionado._id);
+    fixed.value = true;
+    text.value = "Editar Bus";
+    cedula.value = conductorSeleccionado.cedula;
+    nombre.value = conductorSeleccionado.nombre;
+    experiencia.value = conductorSeleccionado.experiencia;
+    telefono.value = conductorSeleccionado.telefono;
+  }
 }
 
-async function InactivarCliente(id) {
-  await ClienteStore.putClienteInactivar(id);
+async function InactivarConductor(id) {
+  await conductorStore.putInactivarConductor(id);
   obtenerInfo();
 }
 
-async function ActivarCliente(id) {
-  await ClienteStore.putClienteActivar(id);
+async function ActivarConductors(id) {
+  await conductorStore.putActivarConductor(id);
   obtenerInfo();
 }
 </script>
-
-<style scoped>
-.q-table-container .q-td.opciones {
-  text-align: center;
-}
-
-.q-btn.opcion-btn {
-  margin-right: 5px;
-}
-</style>
