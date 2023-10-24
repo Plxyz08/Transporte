@@ -26,7 +26,7 @@
                     <q-input type="tel" id="telefono" v-model="telefono" outlined label="Teléfono" required></q-input>
                     <label for="nombre">Nombre:</label>
                     <q-input type="text" id="nombre" v-model="nombre" outlined label="Nombre" required></q-input>
-                    <q-btn type="submit" color="primary" label="Comprar"></q-btn>
+                    <q-btn type="submit" color="primary" label="Comprar" class="q-ma-md"></q-btn>
                 </form>
             </div>
         </div>
@@ -37,7 +37,7 @@
 export default {
     data() {
         return {
-            filas: generateBusLayout(10, 4),
+            filas: generateBusLayout(4, 10),
             mostrarContenido: false,
             asientoSeleccionado: null,
             cedula: "",
@@ -94,7 +94,7 @@ function generateBusLayout(filas, asientosPorFila) {
     flex-direction: column;
     border: 1px solid #ccc;
     border-radius: 10px;
-    margin: 2rem 6rem 1rem 1rem;
+    margin: 2rem 3rem 1rem 1rem;
 }
 
 .fila {
@@ -113,8 +113,8 @@ function generateBusLayout(filas, asientosPorFila) {
 }
 
 .asiento-button {
-    width: 40px;
-    height: 40px;
+    width: auto;
+    height: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -122,7 +122,7 @@ function generateBusLayout(filas, asientosPorFila) {
     background-color: #f0f0f0;
     cursor: pointer;
     border: 1px solid #ccc;
-    border-radius: 50%;
+    border-radius: 10%;
     font-weight: bold;
     font-size: 14px;
     color: #333;
