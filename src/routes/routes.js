@@ -1,6 +1,7 @@
 import Main from "../components/Main.vue";
 import Buses from "../components/Buses.vue";
 import Login from "../components/login.vue";
+import Clientes from "../components/clientes.vue";
 import Menu from "../layouts/Menu.vue";
 import Card from "../components/Card.vue";
 import Tiquetes from "../components/Tiquetes.vue";
@@ -17,6 +18,7 @@ const routes = [
         children: [
             { path: "/Card", component: Card },
             { path: "/Buses", component: Buses },
+            { path: "/Clientes", component: Clientes },
             { path: "/Tiquetes", component: Tiquetes },
 
         ]
