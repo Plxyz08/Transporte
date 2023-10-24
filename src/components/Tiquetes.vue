@@ -92,6 +92,9 @@ function generateBusLayout(filas, asientosPorFila) {
 .asientos {
     display: flex;
     flex-direction: column;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin: 2rem 6rem 1rem 1rem;
 }
 
 .fila {
@@ -103,6 +106,12 @@ function generateBusLayout(filas, asientosPorFila) {
     margin: 5px;
 }
 
+/* Personaliza el estilo de las filas y asientos para darle forma de bus */
+.fila {
+    justify-content: center;
+    align-items: center;
+}
+
 .asiento-button {
     width: 40px;
     height: 40px;
@@ -112,18 +121,22 @@ function generateBusLayout(filas, asientosPorFila) {
     justify-content: center;
     background-color: #f0f0f0;
     cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
 }
 
 .selected {
     background-color: #00b0ff;
-    /* Cambia el color seleccionado a tu preferencia */
 }
 
 .reserved {
     background-color: #ff0000;
-    /* Cambia el color reservado a tu preferencia */
 }
 
 .asiento-icon {
     font-size: 20px;
-}</style>
+}
+</style>
