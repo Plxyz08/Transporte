@@ -64,7 +64,7 @@ let cambio = ref(0)
 
 async function obtenerInfo() {
     try {
-        await HorarioStore.getBuses();
+        await HorarioStore.getHorario();
         horarios.value = HorarioStore.horarios;
         rows.value = HorarioStore.horarios;
     } catch (error) {
