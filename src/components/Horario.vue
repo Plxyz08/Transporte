@@ -12,6 +12,9 @@
                 <q-card-section style="max-height: 50vh" class="scroll">
                     <q-input v-model="hora_partida" label="Hora_partida" style="width: 300px;"  />
                     <q-input v-model="hora_llegada" label="Hora_llegada" style="width: 300px;" />
+                    <q-input v-model="fecha_partida" label="Fecha_partida" style="width: 300px;" />
+                    <q-input v-model="fecha_llegada" label="Fecha_llegada" style="width: 300px;" />
+                    
                 </q-card-section>
 
                 <q-separator />
@@ -36,10 +39,10 @@
                 </template>
                 <template v-slot:body-cell-opciones="props">
                     <q-td :props="props" class="botones">
-                        <q-btn color="blue-4" style="margin-right: 5px;" text-color="black" @click="EditarHorario(props.row._id)"><q-icon name ="edit"/></q-btn> 
+                        <q-btn color="blue-4" style="margin-right: 5px;" text-color="black" @click="EditarHorario(props.row._id)"><q-icon name="edit"/></q-btn> 
                         <q-btn color="green-4" glossy  @click="InactivarHorario(props.row._id)"
-                            v-if="props.row.estado == 1" ><q-icon name ="toggle_on"/></q-btn> 
-                        <q-btn color="red-4" glossy @click="ActivarHorario(props.row._id)" v-else ><q-icon name ="toggle_off"/></q-btn> 
+                            v-if="props.row.estado == 1" ><q-icon name="toggle_on"/></q-btn> 
+                        <q-btn color="red-4" glossy @click="ActivarHorario(props.row._id)" v-else ><q-icon name="toggle_off"/></q-btn> 
                     </q-td>
                 </template>
             </q-table>
@@ -60,11 +63,13 @@ let fixed = ref(false)
 let text = ref('')
 let hora_partida = ref('');
 let hora_llegada = ref();
+let fecha_partida = ref();
+let fecha_llegada = ref();
 let cambio = ref(0)
 
 async function obtenerInfo() {
     try {
-        await HorarioStore.getBuses();
+        await HorarioStore.getHorario();
         horarios.value = HorarioStore.horarios;
         rows.value = HorarioStore.horarios;
     } catch (error) {
@@ -79,6 +84,9 @@ onMounted(async () => {
 const columns = [
     { name: 'hora_partida', label: 'Hora_partida', field: 'hora_partida', sortable: true },
     { name: 'hora_llegada', label: 'Hora_llegada', field: 'hora_llegada', sortable: true },
+    { name: 'fecha_partida', label: 'Fecha_partida', field: 'fecha_partida', sortable: true },
+    { name: 'fecha_llegada', label: 'Fecha_llegada', field: 'fecha_llegada', sortable: true },
+    
     { name: 'estado', label: 'Estado', field: 'estado', sortable: true, format: (val) => (val ? 'Activo' : 'Inactivo') },
     {
         name: 'createAT', label: 'Fecha de Creación', field: 'createAT', sortable: true,
@@ -103,6 +111,8 @@ async function agregarEditarHorario() {
         await HorarioStore.postHorario({
             hora_partida: hora_partida.value,
             hora_llegada: hora_llegada.value,
+            fecha_partida: fecha_partida.value,
+            fecha_llegada: fecha_llegada.value,
         });
         limpiar();
         obtenerInfo();
@@ -112,7 +122,9 @@ async function agregarEditarHorario() {
         if (id) {
             await HorarioStore.putHorario(id, {
                 hora_partida: hora_partida.value,
-                hora_llegada: hora_llegada.value,           
+                hora_llegada: hora_llegada.value, 
+                fecha_partida: fecha_partida.value,
+                fecha_llegada: fecha_llegada.value,          
             });
             limpiar();
             obtenerInfo();
@@ -124,6 +136,8 @@ async function agregarEditarHorario() {
 function limpiar() {
     hora_partida.value = "";
     hora_llegada.value = "";
+    fecha_partida.value = "";
+    fecha_llegada.value = "";
 }
 
 let idHorario = ref('');
@@ -131,11 +145,13 @@ async function EditarHorario(id) {
     cambio.value = 1;
     const HorSeleccionado = horarios.value.find((horario) => horario._id === id);
     if (HorSeleccionado) {
-        idBus.value = String(HorSeleccionado._id);
+        idHorario.value = String(HorSeleccionado._id);
         fixed.value = true;
-        text.value = "Editar Bus";
+        text.value = "Editar Horario";
         hora_partida.value = HorSeleccionado.hora_partida;
         hora_llegada.value = HorSeleccionado.hora_llegada;
+        fecha_partida.value = HorSeleccionado.fecha_partida;
+        fecha_llegada.value = HorSeleccionado.fecha_llegada;
     }
 }
 

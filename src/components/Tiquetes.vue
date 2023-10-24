@@ -71,7 +71,7 @@
             label="Nombre"
             required
           ></q-input>
-          <q-btn type="submit" color="primary" label="Comprar" class="q-ma-md"></q-btn>
+          <q-btn type="submit" color="primary" label="Confirmar compra" class="q-ma-md"></q-btn>
         </form>
       </div>
     </div>
@@ -102,9 +102,6 @@ export default {
       }
     },
     comprarBoleto() {
-      // Lógica de compra del boleto
-      // Puedes agregar tu lógica aquí
-      // Después de la compra, puedes restablecer el asiento seleccionado si es necesario.
       this.asientoSeleccionado = null;
     },
     iniciarVenta() {
@@ -138,7 +135,7 @@ function generateBusLayout(filas, asientosPorFila) {
   display: flex;
   flex-direction: column;
   border-radius: 10px;
-  margin: 3rem 3rem 1rem 1rem;
+  margin: 3rem 6rem 1rem 1rem;
 }
 
 .fila {

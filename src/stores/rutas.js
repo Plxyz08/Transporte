@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import { ref } from 'vue';
 
 export const useRutasStore = defineStore('ruta', () => {
     const rutas = ref([])
-    const getRuta = async () => {
+    const getRuta= async () => {
         try {
-            let res = await axios.get(`/ruta/rutas`);
-            rutas.value = res.data.rutas;
+            let res = await axios.get(`/ruta/ruta`);
+            rutas.value = res.data.ruta;
         } catch (error) {
             throw error
         }

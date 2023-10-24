@@ -14,13 +14,11 @@
             v-model="precio"
             label="Precio"
             style="width: 300px"
-            v-if="cambio == 0"
           />
           <q-input
             v-model="origen"
             label="Origen"
             style="width: 300px"
-            v-if="cambio == 0"
           />
           <q-input v-model="destino" label="Destino" style="width: 300px" />
         </q-card-section>
