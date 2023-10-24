@@ -11,34 +11,34 @@
 
         <q-card-section style="max-height: 50vh" class="scroll">
           <q-input
-            v-model="cedula"
-            label="cedula"
+            v-model="precio"
+            label="Precio"
             style="width: 300px"
             v-if="cambio == 0"
           />
           <q-input
-            v-model="nombre"
-            label="nombre"
+            v-model="origen"
+            label="Origen"
             style="width: 300px"
             v-if="cambio == 0"
           />
-          <q-input v-model="telefono" label="telefono" style="width: 300px" />
+          <q-input v-model="destino" label="Destino" style="width: 300px" />
         </q-card-section>
 
         <q-separator />
 
         <q-card-actions align="right">
           <q-btn flat label="Cerrar" color="primary" v-close-popup />
-          <q-btn flat label="Guardar" color="primary" @click="agregarEditarCliente" />
+          <q-btn flat label="Guardar" color="primary" @click="agregarEditarRuta" />
         </q-card-actions>
       </q-card>
     </q-dialog>
     <div>
-      <h3>Clientes</h3>
+      <h3>Rutas</h3>
       <div class="btn-agregar" style="margin-bottom: 5%">
-        <q-btn color="primary" label="Agregar" @click="agregarCliente()" />
+        <q-btn color="primary" label="Agregar" @click="agregarRuta()" />
       </div>
-      <q-table title="Clientes" :rows="rows" :columns="columns" row-key="name">
+      <q-table title="Rutas" :rows="rows" :columns="columns" row-key="name">
         <template v-slot:body-cell-estado="props">
           <q-td :props="props">
             <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
@@ -51,19 +51,20 @@
               color="blue-4"
               style="margin-right: 5px"
               text-color="black"
-              @click="EditarCliente(props.row._id)"
-              ><q-icon name="edit"
-            /></q-btn>
+              @click="EditarRuta(props.row._id)"
+            >
+              <q-icon name="edit"> </q-icon>
+            </q-btn>
             <q-btn
               color="green-4"
               glossy
-              @click="InactivarCliente(props.row._id)"
+              @click="InactivarRuta(props.row._id)"
               v-if="props.row.estado == 1"
               ><q-icon name="toggle_on"
             /></q-btn>
-            <q-btn color="red-4" glossy @click="ActivarCliente(props.row._id)" v-else
-              ><q-icon name="toggle_off"
-            /></q-btn>
+            <q-btn color="red-4" glossy @click="ActivarRuta(props.row._id)" v-else>
+              <q-icon name="toggle_off"> </q-icon
+            ></q-btn>
           </q-td>
         </template>
       </q-table>
@@ -75,23 +76,23 @@
 import axios from "axios";
 import { ref, onMounted } from "vue";
 import { format } from "date-fns";
-import { useClienteStore } from "../stores/clientes.js";
-const ClienteStore = useClienteStore();
+import { useRutasStore } from "../stores/rutas.js";
+const rutasStore = useRutasStore();
 
-let clientes = ref([]);
+let rutas = ref([]);
 let rows = ref([]);
 let fixed = ref(false);
 let text = ref("");
-let cedula = ref("");
-let nombre = ref();
-let telefono = ref("");
+let precio = ref("");
+let origen = ref();
+let destino = ref("");
 let cambio = ref(0);
 
 async function obtenerInfo() {
   try {
-    await ClienteStore.getCliente();
-    clientes.value = ClienteStore.clientes;
-    rows.value = ClienteStore.clientes;
+    await rutasStore.getRuta();
+    rutas.value = rutasStore.rutas;
+    rows.value = rutasStore.rutas;
   } catch (error) {
     console.log(error);
   }
@@ -102,9 +103,9 @@ onMounted(async () => {
 });
 
 const columns = [
-  { name: "cedula", label: "Cedula", field: "cedula", sortable: true },
-  { name: "nombre", label: "Nombre", field: "nombre", sortable: true },
-  { name: "telefono", label: "Telefono", field: "telefono" },
+  { name: "precio", label: "Precio", field: "precio", sortable: true },
+  { name: "origen", label: "Origen", field: "origen", sortable: true },
+  { name: "destino", label: "Destino", field: "destino" },
   {
     name: "estado",
     label: "Estado",
@@ -127,30 +128,30 @@ const columns = [
   },
 ];
 
-function agregarCliente() {
+function agregarRuta() {
   fixed.value = true;
-  text.value = "Agregar Cliente";
+  text.value = "Agregar Ruta";
   cambio.value = 0;
   limpiar();
 }
 
-async function agregarEditarCliente() {
+async function agregarEditarRuta() {
   if (cambio.value === 0) {
-    await ClienteStore.postCliente({
-      cedula: cedula.value,
-      nombre: nombre.value,
-      telefono: telefono.value,
+    await rutasStore.postRuta({
+      precio: precio.value,
+      origen: origen.value,
+      destino: destino.value,
     });
     limpiar();
     obtenerInfo();
     fixed.value = false;
   } else {
-    let id = idCliente.value;
+    let id = idRuta.value;
     if (id) {
-      await ClienteStore.putCliente(id, {
-        cedula: cedula.value,
-        nombre: nombre.value,
-        telefono: telefono.value,
+      await rutasStore.putEditarRuta(id, {
+        precio: precio.value,
+        origen: origen.value,
+        destino: destino.value,
       });
       limpiar();
       obtenerInfo();
@@ -160,32 +161,32 @@ async function agregarEditarCliente() {
 }
 
 function limpiar() {
-  cedula.value = "";
-  nombre.value = "";
-  telefono.value = "";
+  precio.value = "";
+  origen.value = "";
+  destino.value = "";
 }
 
-let idCliente = ref("");
-async function EditarCliente(id) {
+let idRuta = ref("");
+async function EditarRuta(id) {
   cambio.value = 1;
-  const clienteSeleccionado = clientes.value.find((cliente) => cliente._id === id);
-  if (clienteSeleccionado) {
-    idCliente.value = String(clienteSeleccionado._id);
+  const rutaSeleccionado = rutas.value.find((ruta) => ruta._id === id);
+  if (rutaSeleccionado) {
+    idRuta.value = String(rutaSeleccionado._id);
     fixed.value = true;
-    text.value = "Editar Cliente";
-    cedula.value = clienteSeleccionado.cedula;
-    nombre.value = clienteSeleccionado.nombre;
-    telefono.value = clienteSeleccionado.telefono;
+    text.value = "Editar Ruta";
+    precio.value = rutaSeleccionado.precio;
+    origen.value = rutaSeleccionado.origen;
+    destino.value = rutaSeleccionado.destino;
   }
 }
 
-async function InactivarCliente(id) {
-  await ClienteStore.putClienteInactivar(id);
+async function InactivarRuta(id) {
+  await rutasStore.putInactivarRuta(id);
   obtenerInfo();
 }
 
-async function ActivarCliente(id) {
-  await ClienteStore.putClienteActivar(id);
+async function ActivarRuta(id) {
+  await rutasStore.putActivarRuta(id);
   obtenerInfo();
 }
 </script>
