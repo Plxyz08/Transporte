@@ -14,21 +14,19 @@
             v-model="cedula"
             label="cedula"
             style="width: 300px"
-            v-if="cambio == 0"
           />
           <q-input
             v-model="nombre"
             label="nombre"
             style="width: 300px"
-            v-if="cambio == 0"
           />
-          <q-input v-model="telefono" label="telefono" style="width: 300px" />
+          <q-input 
+          v-model="telefono" 
+          label="telefono" 
+          style="width: 300px" 
+          />
         </q-card-section>
-                <q-card-section style="max-height: 50vh" class="scroll">
-                    <q-input v-model="cedula" label="cedula" style="width: 300px;"  />
-                    <q-input v-model="nombre" label="nombre" style="width: 300px;"  />
-                    <q-input v-model="telefono" label="telefono" style="width: 300px;" />
-                </q-card-section>
+    
 
         <q-separator />
 

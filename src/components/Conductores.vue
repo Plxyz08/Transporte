@@ -93,6 +93,7 @@ async function obtenerInfo() {
     await conductorStore.getConductor();
     conductores.value = conductorStore.conductores;
     rows.value = conductorStore.conductores;
+    console.log(conductorStore);
   } catch (error) {
     console.error(error);
   }
