@@ -24,7 +24,7 @@ export default {
         });
       } else {
         console.log("entra");
-        router.push("/Buses");
+        router.push("/Card");
         $q.notify({
           type: 'positive',
           message: 'Inicio Exitoso'
@@ -53,12 +53,12 @@ export default {
 
       <q-card-section>
 
-        <div class="text-h5 q-mt-sm q-mb-xs" style="margin-bottom:20px;"><b>Bienvenido</b></div>
+        <div class="text-h5 q-mt-sm q-mb-xs" style="margin-bottom:20px; color: black;"><b>Bienvenido</b></div>
         <div class="text-caption text-grey">
-          <input type="text" v-model="cuenta" name="cajaTexto" placeholder="cuenta"
-            style="padding-left: 30px; width: 90%; height: 30px; border: 1px solid #ccc; margin-bottom: 20px;">
-          <input type="text" v-model="clave" id="clave" name="cajaTexto" placeholder="clave"
-            style="padding-left: 30px; width: 90%; height: 30px; border: 1px solid #ccc; margin-bottom: 20px;">
+          <input type="text" v-model="cuenta" name="cajaTexto" placeholder="Cuenta"
+            style="padding-left: 30px; border-radius: 5px; background-color: rgb(212, 248, 255); color: black; width: 90%; height: 30px; border: 1px solid #000000; margin-bottom: 20px;">
+          <input type="text" v-model="clave" id="clave" name="cajaTexto" placeholder="Contraseña"
+            style="padding-left: 30px; border-radius: 5px; background-color: rgb(212, 248, 255); color: black; width: 90%; height: 30px; border: 1px solid #000000; margin-bottom: 20px;">
           <!-- <q-btn no-caps push color="primary"  @click="iniciar()" >
             <span v-if="useAdmin.loading">Iniciar</span>
             <q-spinner-radio v-else/>
@@ -69,7 +69,7 @@ export default {
               <q-spinner-radio />
             </template>
           </q-btn>  -->
-          <q-btn :loading="useAdmin.loading" color="purple" @click="iniciar()">
+          <q-btn :loading="useAdmin.loading" color="blue" @click="iniciar()">
             Button
             <template v-slot:loading>
               <q-spinner-radio />

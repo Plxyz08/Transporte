@@ -10,10 +10,9 @@
                 <q-separator />
 
                 <q-card-section style="max-height: 50vh" class="scroll">
-                    <q-input v-model="placa" label="Placa" style="width: 300px;" v-if="cambio == 0" />
-                    <q-input v-model="numero_bus" label="Número de Bus" style="width: 300px;" v-if="cambio == 0" />
-                    <q-input v-model="placa" label="Placa" style="width: 300px;" />
-                    <q-input v-model="numero_bus" label="Numero Bus" style="width: 300px;" />
+                    <q-input v-model="placa" label="Placa" style="width: 300px;"  />
+                    <q-input v-model="numero_bus" label="Número de Bus" style="width: 300px;"  />
+
                     <q-input v-model="cantidad_asientos" label="Cantidad de Asientos" style="width: 300px;" />
                     <q-input v-model="empresa_asignada" label="Empresa Asignada" style="width: 300px;" />
                 </q-card-section>
@@ -31,7 +30,10 @@
             <div class="btn-agregar" style="margin-bottom: 5%;">
                 <q-btn color="primary" label="Agregar" @click="agregarBus()" />
             </div>
-            <q-table title="Buses" :rows="rows" :columns="columns" row-key="name">
+            <q-input v-model="searchPlaca" label="Buscar por Placa" style="width: 300px; border-radius: 5
+            px; background-color: azure; position:relative; left: 80%;"/>
+
+            <q-table style="width: 1300px; margin-top: 10px" title="Buses" :rows="rows" :columns="columns" row-key="name">
                 <template v-slot:body-cell-estado="props">
                     <q-td :props="props">
                         <label for="" v-if="props.row.estado == 1" style="color: green;">Activo</label>

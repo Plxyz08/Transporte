@@ -11,7 +11,7 @@ import Tiquetes from "../components/Tiquetes.vue";
 import { createRouter, createWebHashHistory } from "vue-router"
 
 const routes = [
-    { path: "/", component: Main },
+    { path: "/", component: Login },
     { path: "/Login", component: Login },
     {
         path: "/Menu", component: Menu,
