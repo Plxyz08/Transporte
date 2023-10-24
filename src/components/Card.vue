@@ -13,7 +13,7 @@
       >
     </div>
     <div class="card">
-      <router-link to="/"
+      <router-link to="/Conductores"
         ><q-icon style="font-size: 6rem" name="badge" />
         <br />Conductores</router-link
       >

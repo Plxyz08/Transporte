@@ -5,6 +5,7 @@ import Clientes from "../components/clientes.vue";
 import Menu from "../layouts/Menu.vue";
 import Card from "../components/Card.vue";
 import Tiquetes from "../components/Tiquetes.vue";
+import Conductores from "../components/Conductores.vue";
 
 
 
@@ -20,7 +21,7 @@ const routes = [
             { path: "/Buses", component: Buses },
             { path: "/Clientes", component: Clientes },
             { path: "/Tiquetes", component: Tiquetes },
-
+            { path: "/Conductores", component: Conductores },
         ]
     },
 ]

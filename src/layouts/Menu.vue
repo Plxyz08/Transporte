@@ -9,7 +9,7 @@
           Transporte
         </q-toolbar-title>
 
-        <q-btn dense flat round icon="logout" @click="" />
+        <q-btn dense flat round icon="logout" @click="d" />
       </q-toolbar>
     </q-header>
 
@@ -58,7 +58,7 @@
               <q-icon style="font-size: 2.5rem" name="badge" />
             </q-item-section>
 
-            <q-item-section> Conductores </q-item-section>
+            <q-item-section><router-link to="/Conductores"> Conductores</router-link> </q-item-section>
           </q-item>
 
           <q-item clickable v-ripple>
