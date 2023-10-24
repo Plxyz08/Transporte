@@ -32,7 +32,7 @@
       >
     </div>
     <div class="card">
-      <router-link to="/"
+      <router-link to="/Tiquetes"
         ><q-icon style="font-size: 6rem" name="confirmation_number" />
         <br />Tickets</router-link
       >

@@ -82,7 +82,7 @@
               <q-icon style="font-size: 2.5rem" name="confirmation_number" />
             </q-item-section>
 
-            <q-item-section> Tickets </q-item-section>
+            <q-item-section><router-link to="/Tiquetes">Tickets</router-link> </q-item-section>
           </q-item>
 
           <q-item clickable v-ripple>
@@ -98,7 +98,7 @@
               <q-icon style="font-size: 2.5rem" name="payments" />
             </q-item-section>
 
-            <q-item-section> Ventas </q-item-section>
+            <q-item-section><router-link to="">Ventas</router-link> </q-item-section>
           </q-item>
         </q-list>
       </q-scroll-area>

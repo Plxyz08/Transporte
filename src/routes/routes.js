@@ -3,6 +3,8 @@ import Buses from "../components/Buses.vue";
 import Login from "../components/login.vue";
 import Menu from "../layouts/Menu.vue";
 import Card from "../components/Card.vue";
+import Tiquetes from "../components/Tiquetes.vue";
+
 
 
 import { createRouter, createWebHashHistory } from "vue-router"
@@ -15,6 +17,8 @@ const routes = [
         children: [
             { path: "/Card", component: Card },
             { path: "/Buses", component: Buses },
+            { path: "/Tiquetes", component: Tiquetes },
+
         ]
     },
 ]
