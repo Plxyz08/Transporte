@@ -2,6 +2,7 @@ import Main from "../components/Main.vue";
 import Buses from "../components/Buses.vue";
 import Login from "../components/login.vue";
 import Clientes from "../components/Clientes.vue";
+import Horarios from "../components/Horario.vue";
 import Menu from "../layouts/Menu.vue";
 import Card from "../components/Card.vue";
 import Tiquetes from "../components/Tiquetes.vue";
@@ -19,6 +20,7 @@ const routes = [
             { path: "/Card", component: Card },
             { path: "/Buses", component: Buses },
             { path: "/Clientes", component: Clientes },
+            { path: "/Horarios", component: Horarios },
             { path: "/Tiquetes", component: Tiquetes },
 
         ]

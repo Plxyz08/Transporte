@@ -7,7 +7,7 @@
       >
     </div>
     <div class="card">
-      <router-link to="/"
+      <router-link to="/Clientes"
         ><q-icon style="font-size: 6rem" name="people_alt" />
         <br />Clientes</router-link
       >
@@ -19,7 +19,7 @@
       >
     </div>
     <div class="card">
-      <router-link to="/"
+      <router-link to="/Horarios"
         ><q-icon style="font-size: 6rem" name="today" />
         <br />Horarios</router-link
       >

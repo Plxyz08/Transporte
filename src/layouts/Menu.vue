@@ -9,7 +9,7 @@
           Transporte
         </q-toolbar-title>
 
-        <q-btn dense flat round icon="logout" @click="" />
+        <q-btn dense flat round icon="logout" @click="s" />
       </q-toolbar>
     </q-header>
 
@@ -50,7 +50,7 @@
               <q-icon style="font-size: 2.5rem" name="people_alt" />
             </q-item-section>
 
-            <q-item-section> Clientes </q-item-section>
+            <q-item-section> <router-link to="/Clientes">Clientes</router-link> </q-item-section>
           </q-item>
 
           <q-item clickable v-ripple>
