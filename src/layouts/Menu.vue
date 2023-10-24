@@ -74,7 +74,7 @@
               <q-icon style="font-size: 2.5rem" name="fork_right" />
             </q-item-section>
 
-            <q-item-section> Rutas </q-item-section>
+            <q-item-section><router-link to="/Rutas">Rutas </router-link> </q-item-section>
           </q-item>
 
           <q-item clickable v-ripple>

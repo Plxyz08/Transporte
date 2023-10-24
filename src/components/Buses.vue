@@ -40,10 +40,10 @@
                 </template>
                 <template v-slot:body-cell-opciones="props">
                     <q-td :props="props" class="botones">
-                        <q-btn color="blue-4" style="margin-right: 5px;" text-color="black" @click="EditarBus(props.row._id)"><q-icon name ="edit"/></q-btn> 
+                        <q-btn color="blue-4" style="margin-right: 5px;" text-color="black" @click="EditarBus(props.row._id)"><q-icon name="edit"/></q-btn> 
                         <q-btn color="green-4" glossy  @click="InactivarBus(props.row._id)"
-                            v-if="props.row.estado == 1" ><q-icon name ="toggle_on"/></q-btn> 
-                        <q-btn color="red-4" glossy @click="ActivarBus(props.row._id)" v-else ><q-icon name ="toggle_off"/></q-btn> 
+                            v-if="props.row.estado == 1" ><q-icon name="toggle_on"/></q-btn> 
+                        <q-btn color="red-4" glossy @click="ActivarBus(props.row._id)" v-else ><q-icon name="toggle_off"/></q-btn> 
                     </q-td>
                 </template>
             </q-table>

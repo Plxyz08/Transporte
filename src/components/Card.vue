@@ -25,7 +25,7 @@
       >
     </div>
     <div class="card">
-      <router-link to="/"
+      <router-link to="/Rutas"
         ><q-icon style="font-size: 6.2rem" name="fork_right" />
         <br />
         Rutas</router-link

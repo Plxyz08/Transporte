@@ -94,7 +94,7 @@ async function obtenerInfo() {
     conductores.value = conductorStore.conductores;
     rows.value = conductorStore.conductores;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
