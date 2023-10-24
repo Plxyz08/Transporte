@@ -4,7 +4,8 @@
             <div class="asientos" v-if="mostrarContenido">
                 <div class="fila" v-for="(fila, filaIndex) in filas" :key="filaIndex">
                     <div class="asiento" v-for="(asiento, asientoIndex) in fila" :key="asiento.numero">
-                        <button @click="seleccionarAsiento(asiento)" :disabled="asiento.reservado" class="asiento-button">
+                        <button @click="seleccionarAsiento(asiento)"
+                            :class="{ 'asiento-button': true, 'selected': asientoSeleccionado === asiento, 'reserved': asiento.reservado }">
                             <q-icon :name="asiento.reservado ? 'check' : 'event_seat'" class="asiento-icon"></q-icon>
                             {{ asiento.numero }}
                         </button>
@@ -31,13 +32,13 @@
         </div>
     </div>
 </template>
-  
+
 <script>
 export default {
     data() {
         return {
             filas: generateBusLayout(10, 4),
-            mostrarContenido: false, // Agregamos una variable para controlar la visibilidad
+            mostrarContenido: false,
             asientoSeleccionado: null,
             cedula: "",
             telefono: "",
@@ -62,24 +63,26 @@ export default {
             this.asientoSeleccionado = null;
         },
         iniciarVenta() {
-            this.mostrarContenido = true; // Mostrar el contenido al hacer clic en el botón "Agregar venta"
+            this.mostrarContenido = true;
         },
     },
 };
 
 function generateBusLayout(filas, asientosPorFila) {
     const layout = [];
+    let numeroSilla = 1;
     for (let fila = 1; fila <= filas; fila++) {
         const filaAsientos = [];
         for (let asiento = 1; asiento <= asientosPorFila; asiento++) {
-            filaAsientos.push({ numero: asiento, reservado: false });
+            filaAsientos.push({ numero: numeroSilla, reservado: false });
+            numeroSilla++;
         }
         layout.push(filaAsientos);
     }
     return layout;
 }
 </script>
-  
+
 <style scoped>
 .bus-layout {
     display: flex;
@@ -100,12 +103,27 @@ function generateBusLayout(filas, asientosPorFila) {
     margin: 5px;
 }
 
-.formulario {
-    width: 300px;
-    /* Ajusta el ancho del formulario según tus necesidades */
-    padding: 20px;
+.asiento-button {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     background-color: #f0f0f0;
-    border: 1px solid #ccc;
+    cursor: pointer;
 }
-</style>
-  
+
+.selected {
+    background-color: #00b0ff;
+    /* Cambia el color seleccionado a tu preferencia */
+}
+
+.reserved {
+    background-color: #ff0000;
+    /* Cambia el color reservado a tu preferencia */
+}
+
+.asiento-icon {
+    font-size: 20px;
+}</style>
