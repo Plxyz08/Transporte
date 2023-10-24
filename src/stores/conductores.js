@@ -8,7 +8,7 @@ export const useConductorStore = defineStore('conductor', () => {
     const getConductor = async () => {
         try {
             let res = await axios.get(`/conductor/conductor`);
-            conductores.value = res.data.conductores;
+            conductores.value = res.data.conductor;
         } catch (error) {
             throw error
         }
