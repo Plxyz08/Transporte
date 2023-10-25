@@ -10,8 +10,8 @@
                 <q-separator />
 
                 <q-card-section style="max-height: 50vh" class="scroll">
-                    <q-input v-model="placa" label="Placa" style="width: 300px;"  />
-                    <q-input v-model="numero_bus" label="Número de Bus" style="width: 300px;"  />
+                    <q-input v-model="placa" label="Placa" style="width: 300px;" />
+                    <q-input v-model="numero_bus" label="Número de Bus" style="width: 300px;" />
 
                     <q-input v-model="cantidad_asientos" label="Cantidad de Asientos" style="width: 300px;" />
                     <q-input v-model="empresa_asignada" label="Empresa Asignada" style="width: 300px;" />
@@ -31,7 +31,7 @@
                 <q-btn color="primary" label="Agregar" @click="agregarBus()" />
             </div>
             <q-input v-model="searchPlaca" label="Buscar por Placa" style="width: 300px; border-radius: 5
-            px; background-color: azure; position:relative; left: 80%;"/>
+            px; background-color: azure; position:relative; left: 80%;" />
 
             <q-table style="width: 1300px; margin-top: 10px" title="Buses" :rows="rows" :columns="columns" row-key="name">
                 <template v-slot:body-cell-estado="props">
@@ -42,10 +42,12 @@
                 </template>
                 <template v-slot:body-cell-opciones="props">
                     <q-td :props="props" class="botones">
-                        <q-btn color="blue-4" style="margin-right: 5px;" text-color="black" @click="EditarBus(props.row._id)"><q-icon name="edit"/></q-btn> 
-                        <q-btn color="green-4" glossy  @click="InactivarBus(props.row._id)"
-                            v-if="props.row.estado == 1" ><q-icon name="toggle_on"/></q-btn> 
-                        <q-btn color="red-4" glossy @click="ActivarBus(props.row._id)" v-else ><q-icon name="toggle_off"/></q-btn> 
+                        <q-btn color="blue-4" style="margin-right: 5px;" text-color="black"
+                            @click="EditarBus(props.row._id)"><q-icon name="edit" /></q-btn>
+                        <q-btn color="green-4" glossy @click="InactivarBus(props.row._id)"
+                            v-if="props.row.estado == 1"><q-icon name="toggle_on" /></q-btn>
+                        <q-btn color="red-4" glossy @click="ActivarBus(props.row._id)" v-else><q-icon
+                                name="toggle_off" /></q-btn>
                     </q-td>
                 </template>
             </q-table>
@@ -124,7 +126,7 @@ async function agregarEditarBus() {
         if (id) {
             await busStore.putEditarBus(id, {
                 placa: placa.value,
-                numero_bus: numero_bus.value,            
+                numero_bus: numero_bus.value,
                 cantidad_asientos: cantidad_asientos.value,
                 empresa_asignada: empresa_asignada.value,
             });
