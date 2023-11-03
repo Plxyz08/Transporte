@@ -15,14 +15,14 @@ export const useConductorStore = defineStore('conductor', () => {
     }
     const postConductor = async (data) => {
         try {
-            let res = await axios.post("conductor/conductor/agregar", data);
+            let res = await axios.post(`conductor/agregar`, data);
             return res
         } catch (error) {
             throw error
         }
     }
 
-    const putEditarConductor = async (id, data) => {
+    const putConductor = async (id, data) => {
         try {
             let res = await axios.put(`conductor/conductor/${id}`, data);
             return res
@@ -50,7 +50,7 @@ export const useConductorStore = defineStore('conductor', () => {
 
     return {
         conductores,
-        getConductor, postConductor, putEditarConductor, putInactivarConductor, putActivarConductor
+        getConductor, postConductor, putConductor, putInactivarConductor, putActivarConductor
     };
 });
 

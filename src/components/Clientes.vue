@@ -41,6 +41,8 @@
       <div class="btn-agregar" style="margin-bottom: 5%">
         <q-btn color="primary" label="Agregar" @click="agregarCliente()" />
       </div>
+      <q-input v-model="searchPlaca" label="Buscar por Cedula" style="width: 300px; border-radius: 5
+            px; background-color: azure; position:relative; left: 80%;" />
       <q-table title="Clientes" :rows="rows" :columns="columns" row-key="name">
         <template v-slot:body-cell-estado="props">
           <q-td :props="props">

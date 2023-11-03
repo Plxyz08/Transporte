@@ -14,13 +14,11 @@
             v-model="cedula"
             label="Cedula"
             style="width: 300px"
-            v-if="cambio == 0"
           />
           <q-input
             v-model="nombre"
             label="Nombre"
             style="width: 300px"
-            v-if="cambio == 0"
           />
           <q-input v-model="experiencia" label="Experiencia" style="width: 300px" />
           <q-input v-model="telefono" label="Telefono" style="width: 300px" />
@@ -39,6 +37,8 @@
       <div class="btn-agregar" style="margin-bottom: 5%">
         <q-btn color="primary" name="add" label="Agregar" @click="agregarConductor()" />
       </div>
+      <q-input v-model="searchPlaca" label="Buscar por Cedula" style="width: 300px; border-radius: 5
+            px; background-color: azure; position:relative; left: 80%;" />
       <q-table title="Conductores" :rows="rows" :columns="columns" row-key="name">
         <template v-slot:body-cell-estado="props">
           <q-td :props="props">
@@ -151,7 +151,7 @@ async function agregarEditarConductor() {
   } else {
     let id = idConductor.value;
     if (id) {
-      conductorStore.putEditarConductor(id, {
+      conductorStore.putConductor(id, {
         cedula: cedula.value,
         nombre: nombre.value,
         experiencia: experiencia.value,
