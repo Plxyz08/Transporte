@@ -38,7 +38,7 @@
       >
     </div>
     <div class="card">
-      <router-link to="/"
+      <router-link to="/Vendedor"
         ><q-icon style="font-size: 6rem" name="point_of_sale" />
         <br />Vendedores</router-link
       >

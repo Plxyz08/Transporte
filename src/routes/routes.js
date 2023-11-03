@@ -8,6 +8,7 @@ import Card from "../components/Card.vue";
 import Tiquetes from "../components/Tiquetes.vue";
 import Conductores from "../components/Conductores.vue";
 import Rutas from "../components/Rutas.vue";
+import Vendedor from "../components/Vendedor.vue";
 
 
 
@@ -26,6 +27,7 @@ const routes = [
             { path: "/Tiquetes", component: Tiquetes },
             { path: "/Conductores", component: Conductores },
             { path: "/Rutas", component: Rutas },
+            { path: "/Vendedor", component: Vendedor },
         ]
     },
 ]
