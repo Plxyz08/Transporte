@@ -13,35 +13,35 @@ export const useVendedorStore = defineStore('vendedor', () => {
             throw error
         }
     }
-    const postCliente = async (data) =>{
+    const postVendedor = async (data) =>{
         try {
-            let res = await axios.post("cliente/cliente/agregar", data);
+            let res = await axios.post("vendedor/agregar", data);
             return res
         } catch (error) {
             throw error
         }
     }
 
-    const putCliente = async (id, data) => {
+    const putVendedor = async (id, data) => {
         try {
-            let res = await axios.put(`cliente/cliente/${id}`, data);
+            let res = await axios.put(`vendedor/vendedor/${id}`, data);
             return res
         } catch (error) {
             throw error;
         }
     };
 
-    const putClienteInactivar = async (id)=>{
+    const putVendedorInactivar = async (id)=>{
         try {
-            let res = await axios.put(`cliente/inactivarCliente/${id}`)
+            let res = await axios.put(`vendedor/inactivarVendedor/${id}`)
             return res
         } catch (error) {
             console.log(error, "Error al cambiar el estado del cliente");
         }
     }
-    const putClienteActivar = async (id)=>{
+    const putVendedorActivar= async (id)=>{
         try {
-            let res = await axios.put(`cliente/activarCliente/${id}`)
+            let res = await axios.put(`vendedor/activarVendedor/${id}`)
             return res
         } catch (error) {
             console.log(error, "Error al cambiar el estado del cliente");
@@ -50,6 +50,6 @@ export const useVendedorStore = defineStore('vendedor', () => {
 
     return {
         vendedor,
-        getVendedor, postCliente, putCliente, putClienteInactivar, putClienteActivar
+        getVendedor, postVendedor, putVendedor, putVendedorInactivar, putVendedorActivar
     };
 }); 

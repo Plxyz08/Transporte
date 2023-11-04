@@ -21,12 +21,12 @@
               style="width: 300px"
             />
             <q-input 
-            v-model="telefono" 
+            v-model="cuenta" 
             label="cuenta" 
             style="width: 300px" 
             />
             <q-input
-              v-model="nombre"
+              v-model="telefono"
               label="telefono"
               style="width: 300px"
             />
@@ -48,7 +48,7 @@
         </div>
         <q-input v-model="searchPlaca" label="Buscar por Cedula" style="width: 300px; border-radius: 5
               px; background-color: azure; position:relative; left: 80%;" />
-        <q-table title="Clientes" :rows="rows" :columns="columns" row-key="name">
+        <q-table title="Vendedores" :rows="rows" :columns="columns" row-key="name">
           <template v-slot:body-cell-estado="props">
             <q-td :props="props">
               <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
@@ -61,7 +61,7 @@
                 color="blue-4"
                 style="margin-right: 5px"
                 text-color="black"
-                @click="EditarCliente(props.row._id)"
+                @click="EditarVendedor(props.row._id)"
                 ><q-icon name="edit"
               /></q-btn>
               <q-btn
@@ -148,20 +148,22 @@
   
   async function agregarEditarVendedor() {
     if (cambio.value === 0) {
-      await ClienteStore.postCliente({
+      await VendedorStore.postVendedor ({
         cedula: cedula.value,
         nombre: nombre.value,
+        cuenta: cuenta.value,
         telefono: telefono.value,
       });
       limpiar();
       obtenerInfo();
       fixed.value = false;
     } else {
-      let id = idCliente.value;
+      let id = idVendedor.value;
       if (id) {
-        await ClienteStore.putCliente(id, {
+        await VendedorStore.putVendedor(id, {
           cedula: cedula.value,
           nombre: nombre.value,
+          cuenta: cuenta.value,
           telefono: telefono.value,
         });
         limpiar();
@@ -174,30 +176,32 @@
   function limpiar() {
     cedula.value = "";
     nombre.value = "";
+    cuenta.value = "";
     telefono.value = "";
   }
   
-  let idCliente = ref("");
-  async function EditarCliente(id) {
+  let idVendedor = ref("");
+  async function EditarVendedor(id) {
       cambio.value = 1;
-      const clienteSeleccionado = clientes.value.find((cliente) => cliente._id === id);
-      if (clienteSeleccionado) {
-          idCliente.value = String(clienteSeleccionado._id);
+      const vendedorSeleccionado = clientes.value.find((cliente) => cliente._id === id);
+      if (vendedorSeleccionado) {
+          idCliente.value = String(vendedorSeleccionado._id);
           fixed.value = true;
-          text.value = "Editar Cliente";
-          cedula.value = clienteSeleccionado.cedula;
-          nombre.value = clienteSeleccionado.nombre;
-          telefono.value = clienteSeleccionado.telefono;
+          text.value = "Editar Vendedor";
+          cedula.value = vendedorSeleccionado.cedula;
+          nombre.value = vendedorSeleccionado.nombre;
+          cuenta.value = vendedorSeleccionado.cuenta;
+          telefono.value = vendedorSeleccionado.telefono;
       }
   }
   
   async function InactivarVendedor(id) {
-    await ClienteStore.putClienteInactivar(id);
+    await ClienteStore.putVendedorInactivar(id);
     obtenerInfo();
   }
   
   async function ActivarVendedor(id) {
-    await ClienteStore.putClienteActivar(id);
+    await ClienteStore.putVendedorActivar(id);
     obtenerInfo();
   }
   </script>

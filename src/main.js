@@ -13,7 +13,7 @@ const pinia = createPinia();
 
 const app = createApp(App);
 
-axios.defaults.baseURL="https://transporte-czaa.onrender.com/api/ticket/ticket"
+axios.defaults.baseURL="https://transporte-czaa.onrender.com/api/"
 
 app.use(Quasar, {
     plugins: {
