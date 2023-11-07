@@ -24,11 +24,16 @@ export const useAdminStore = defineStore ("admin",()=>{
         loading.value = false;
       }
     };
+
+    const logout = () => {
+      token.value = ''; // Establece el token como vacío para indicar que el usuario ha cerrado sesión
+    };
   
     return {
       login,
       token,
       loading,
+      logout,
     };
   });
   

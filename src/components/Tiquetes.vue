@@ -31,6 +31,13 @@
                     <label for="nombre">Nombre:</label>
                     <q-input type="text" id="nombre" v-model="nombre" outlined label="Nombre" required></q-input>
                     <q-btn type="submit" color="primary" label="Confirmar compra" class="q-ma-md"></q-btn>
+                    <!-- Mostrar mensajes de cliente encontrado o no encontrado -->
+                    <q-banner v-if="clienteEncontrado" color="positive" icon="check" dense>
+                        Cliente encontrado
+                    </q-banner>
+                    <q-banner v-if="clienteNoEncontrado" color="negative" icon="warning" dense>
+                        Cliente no encontrado
+                    </q-banner>
                 </form>
             </div>
             <q-dialog v-model="mostrarModal" class="venta-dialog">
@@ -49,12 +56,15 @@
         </div>
     </div>
 </template>
-  
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useClienteStore } from '../stores/clientes';
+import { useBusStore } from '../stores/buses'
 
 // Datos
+const clienteStore = useClienteStore();
+const busStore = useBusStore();
 const filas = generateBusLayout(4, 10);
 const mostrarContenido = ref(false);
 const asientoSeleccionado = ref(null);
@@ -65,18 +75,62 @@ const mostrarModal = ref(false);
 const busSeleccionado = ref(null);
 const buses = ref([]);
 const fechaSalida = ref(null);
+const clienteEncontrado = ref(false); // Variable para verificar si se encontró el cliente
+const clienteNoEncontrado = ref(false); // Variable para verificar si el cliente no se encontró
 
-
-const clienteStore = useClienteStore();
+// En el hook "onMounted", llama a la función para obtener la lista de buses
+onMounted(async () => {
+    try {
+        await busStore.getBuses();
+        const placasBuses = busStore.buses.map(bus => bus.placa);
+        buses.value = placasBuses;
+    } catch (error) {
+        console.error('Error al cargar la lista de placas de los buses:', error);
+    }
+});
 
 // Método para buscar cliente
 const buscarCliente = async () => {
-  try {
-    await clienteStore.getCliente(); // Invoca la función getCliente del store
-  } catch (error) {
-    console.error('Error al buscar cliente:', error);
-  }
+    try {
+        const cedulaCliente = cedula.value;
+        const clienteEncontrado = await clienteStore.getClientePorCedula(cedulaCliente);
+        if (clienteEncontrado) {
+            nombre.value = clienteEncontrado.nombre;
+            telefono.value = clienteEncontrado.telefono;
+            clienteEncontrado.value = true;
+            clienteNoEncontrado.value = false;
+        } else {
+            console.error('Cliente no encontrado');
+            nombre.value = '';
+            telefono.value = '';
+            clienteEncontrado.value = false;
+            clienteNoEncontrado.value = true;
+        }
+    } catch (error) {
+        console.error('Error al buscar cliente:', error);
+    }
 };
+
+// Método para agregar cliente
+const agregarCliente = async () => {
+    try {
+        const nuevoCliente = {
+            cedula: cedula.value,
+            nombre: nombre.value,
+            telefono: telefono.value,
+        };
+        const res = await clienteStore.postCliente(nuevoCliente);
+        if (res.status === 200) {
+            clienteEncontrado.value = true;
+            clienteNoEncontrado.value = false;
+        } else {
+            console.error('Error al agregar el cliente:', res.data);
+        }
+    } catch (error) {
+        console.error('Error al agregar el cliente:', error);
+    }
+};
+
 // Métodos
 const reservarAsiento = (asiento) => {
     if (!asiento.reservado) {
@@ -94,21 +148,15 @@ const comprarBoleto = () => {
     asientoSeleccionado.value = null;
 };
 
-const iniciarVenta = () => {
-    mostrarContenido.value = true;
-};
-
 const mostrarModalVenta = () => {
     mostrarModal.value = true;
 };
 
 const guardarVenta = () => {
-    // Aquí puedes manejar la lógica para guardar la venta, la ruta, el vehículo y la fecha seleccionados.
     mostrarModal.value = false;
     mostrarContenido.value = true;
 };
 
-// Generador de diseño de autobús
 function generateBusLayout(filas, asientosPorFila) {
     const layout = [];
     let numeroSilla = 1;
@@ -123,7 +171,7 @@ function generateBusLayout(filas, asientosPorFila) {
     return layout;
 }
 </script>
-  
+
 <style scoped>
 .bus-layout {
     display: flex;
@@ -146,7 +194,6 @@ function generateBusLayout(filas, asientosPorFila) {
     margin: 5px;
 }
 
-/* Personaliza el estilo de las filas y asientos para darle forma de bus */
 .fila {
     justify-content: center;
     align-items: center;
@@ -180,9 +227,7 @@ function generateBusLayout(filas, asientosPorFila) {
     font-size: 20px;
 }
 
-/* Estilo para el diálogo de venta */
 .venta-dialog {
     max-width: 400px;
 }
 </style>
-  
