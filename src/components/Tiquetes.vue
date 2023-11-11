@@ -7,8 +7,8 @@
                     <div class="asiento" v-for="(asiento, asientoIndex) in fila" :key="asiento.numero">
                         <button @click="seleccionarAsiento(asiento)" :class="{
                             'asiento-button': true,
-                            selected: asientoSeleccionado === asiento,
-                            reserved: asiento.reservado,
+                            'selected': asientoSeleccionado === asiento,
+                            'reserved': asiento.reservado,
                         }">
                             <q-icon :name="asiento.reservado ? 'check' : 'event_seat'" class="asiento-icon"></q-icon>
                             {{ asiento.numero }}
@@ -17,7 +17,7 @@
                 </div>
             </div>
             <div v-else>
-                <q-btn @click="mostrarModalVenta" icon="add" color="primary"> Agregar venta </q-btn>
+                <q-btn @click="mostrarModalVenta" icon="add" color="primary">Agregar venta</q-btn>
             </div>
             <div v-if="asientoSeleccionado" class="formulario">
                 <h4>Asiento #{{ asientoSeleccionado.numero }}</h4>
@@ -56,96 +56,53 @@
         </div>
     </div>
 </template>
-
+  
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useClienteStore } from '../stores/clientes';
-import { useBusStore } from '../stores/buses'
+import { useBusStore } from '../stores/buses';
 
-// Datos
 const clienteStore = useClienteStore();
 const busStore = useBusStore();
+
 const filas = generateBusLayout(4, 10);
 const mostrarContenido = ref(false);
 const asientoSeleccionado = ref(null);
-const cedula = ref("");
-const telefono = ref("");
-const nombre = ref("");
+const cedula = ref('');
+const telefono = ref('');
+const nombre = ref('');
 const mostrarModal = ref(false);
 const busSeleccionado = ref(null);
 const buses = ref([]);
 const fechaSalida = ref(null);
-const clienteEncontrado = ref(false); // Variable para verificar si se encontró el cliente
-const clienteNoEncontrado = ref(false); // Variable para verificar si el cliente no se encontró
 
-// En el hook "onMounted", llama a la función para obtener la lista de buses
+
 onMounted(async () => {
     try {
         await busStore.getBuses();
-        const placasBuses = busStore.buses.map(bus => bus.placa);
-        buses.value = placasBuses;
+        buses.value = busStore.buses.map((bus) => bus.placa);
     } catch (error) {
         console.error('Error al cargar la lista de placas de los buses:', error);
     }
 });
 
-// Método para buscar cliente
-const buscarCliente = async () => {
-    try {
-        const cedulaCliente = cedula.value;
-        const clienteEncontrado = await clienteStore.getClientePorCedula(cedulaCliente);
-        if (clienteEncontrado) {
-            nombre.value = clienteEncontrado.nombre;
-            telefono.value = clienteEncontrado.telefono;
-            clienteEncontrado.value = true;
-            clienteNoEncontrado.value = false;
-        } else {
-            console.error('Cliente no encontrado');
-            nombre.value = '';
-            telefono.value = '';
-            clienteEncontrado.value = false;
-            clienteNoEncontrado.value = true;
-        }
-    } catch (error) {
-        console.error('Error al buscar cliente:', error);
-    }
-};
-
-// Método para agregar cliente
-const agregarCliente = async () => {
-    try {
-        const nuevoCliente = {
-            cedula: cedula.value,
-            nombre: nombre.value,
-            telefono: telefono.value,
-        };
-        const res = await clienteStore.postCliente(nuevoCliente);
-        if (res.status === 200) {
-            clienteEncontrado.value = true;
-            clienteNoEncontrado.value = false;
-        } else {
-            console.error('Error al agregar el cliente:', res.data);
-        }
-    } catch (error) {
-        console.error('Error al agregar el cliente:', error);
-    }
-};
-
-// Métodos
-const reservarAsiento = (asiento) => {
-    if (!asiento.reservado) {
-        asiento.reservado = true;
-    }
-};
-
 const seleccionarAsiento = (asiento) => {
     if (!asiento.reservado) {
-        asientoSeleccionado.value = asiento;
+        if (asientoSeleccionado.value === asiento) {
+            asientoSeleccionado.value = null;
+        } else {
+            asientoSeleccionado.value = asiento;
+        }
     }
 };
 
+
 const comprarBoleto = () => {
-    asientoSeleccionado.value = null;
+    if (asientoSeleccionado.value) {
+        asientoSeleccionado.value.classList.remove('selected-green');
+        asientoSeleccionado.value.classList.add('confirmed');
+        asientoSeleccionado.value = null;
+    }
 };
 
 const mostrarModalVenta = () => {
@@ -153,9 +110,40 @@ const mostrarModalVenta = () => {
 };
 
 const guardarVenta = () => {
+    // Validar que se haya seleccionado un bus
+    if (!busSeleccionado.value) {
+        showErrorMessage('Debes seleccionar un bus.');
+        return;
+    }
+
+    // Validar que se haya seleccionado una fecha
+    if (!fechaSalida.value) {
+        showErrorMessage('Debes seleccionar una fecha de salida.');
+        return;
+    }
+
+    // Validar que la fecha de salida sea a partir del día siguiente al actual
+    const fechaActual = new Date();
+    const fechaSeleccionada = new Date(fechaSalida.value);
+
+    if (fechaSeleccionada <= fechaActual) {
+        showErrorMessage('La fecha de salida debe ser a partir del día siguiente al actual.');
+        return;
+    }
+
+    // Si se cumple ambas validaciones, puedes cerrar el modal
     mostrarModal.value = false;
+
+    // Mostrar los asientos
     mostrarContenido.value = true;
 };
+
+
+const showErrorMessage = (message) => {
+    // Aquí puedes personalizar la lógica para mostrar una notificación de error
+    alert(message); // Ejemplo: muestra una alerta con el mensaje de error
+};
+
 
 function generateBusLayout(filas, asientosPorFila) {
     const layout = [];
@@ -171,7 +159,7 @@ function generateBusLayout(filas, asientosPorFila) {
     return layout;
 }
 </script>
-
+  
 <style scoped>
 .bus-layout {
     display: flex;
@@ -206,18 +194,29 @@ function generateBusLayout(filas, asientosPorFila) {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: #f0f0f0;
+    background-color: white;
+    /* Fondo blanco */
     cursor: pointer;
     border: 1px solid #ccc;
     border-radius: 10%;
     font-weight: bold;
     font-size: 14px;
     color: #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    /* Sombra suave */
+    transition: background-color 0.3s;
+    /* Transición para el cambio de color de fondo */
 }
 
-.selected {
-    background-color: #00b0ff;
+.reserved {
+    background-color: #ff0000;
 }
+
+.confirmed {
+    background-color: blue;
+    color: white;
+}
+
 
 .reserved {
     background-color: #ff0000;
@@ -231,3 +230,4 @@ function generateBusLayout(filas, asientosPorFila) {
     max-width: 400px;
 }
 </style>
+  

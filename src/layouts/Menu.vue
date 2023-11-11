@@ -28,7 +28,7 @@
             <q-item-section> <router-link to="/Card">Home</router-link> </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item active clickable v-ripple>
             <q-item-section avatar>
               <q-icon style="font-size: 2.5rem" name="directions_bus" />
             </q-item-section>
@@ -38,7 +38,7 @@
             </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item active clickable v-ripple>
             <q-item-section avatar>
               <q-icon style="font-size: 2.5rem" name="people_alt" />
             </q-item-section>
@@ -46,7 +46,7 @@
             <q-item-section> <router-link to="/Clientes">Clientes</router-link> </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item active clickable v-ripple>
             <q-item-section avatar>
               <q-icon style="font-size: 2.5rem" name="badge" />
             </q-item-section>
@@ -54,15 +54,15 @@
             <q-item-section><router-link to="/Conductores"> Conductores</router-link> </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item active clickable v-ripple>
             <q-item-section avatar>
               <q-icon style="font-size: 2.5rem" name="today" />
             </q-item-section>
 
-            <q-item-section> Horarios </q-item-section>
+            <q-item-section><router-link to="/Horarios"> Horarios</router-link> </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item active clickable v-ripple>
             <q-item-section avatar>
               <q-icon style="font-size: 2.5rem" name="fork_right" />
             </q-item-section>
@@ -70,7 +70,7 @@
             <q-item-section><router-link to="/Rutas">Rutas </router-link> </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item active clickable v-ripple>
             <q-item-section avatar>
               <q-icon style="font-size: 2.5rem" name="confirmation_number" />
             </q-item-section>
@@ -78,20 +78,20 @@
             <q-item-section><router-link to="/Tiquetes">Tickets</router-link> </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item active clickable v-ripple>
             <q-item-section avatar>
               <q-icon style="font-size: 2.5rem" name="point_of_sale" />
             </q-item-section>
 
-            <q-item-section> Vendedores </q-item-section>
+            <q-item-section><router-link to="/Vendedor"> Vendedores</router-link></q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item active clickable v-ripple>
             <q-item-section avatar>
               <q-icon style="font-size: 2.5rem" name="payments" />
             </q-item-section>
 
-            <q-item-section><router-link to="">Ventas</router-link> </q-item-section>
+            <q-item-section><router-link to="/Ventas">Ventas</router-link> </q-item-section>
           </q-item>
         </q-list>
       </q-scroll-area>
