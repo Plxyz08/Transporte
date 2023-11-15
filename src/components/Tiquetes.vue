@@ -92,8 +92,15 @@
         <q-card class="modal-content">
           <q-card-section class="q-pa-md">
             <h4>Registrar Venta</h4>
+            <q-select v-model="ruta" :options="rutas" label="Rutas"></q-select>
             <q-select v-model="busSeleccionado" label="Bus" :options="buses"></q-select>
-            <q-date class="q-ma-md" v-model="fechaSalida" label="Fecha de Salida" />
+            <q-input
+              v-model="fechaSalida"
+              filled
+              type="date"
+              hint="Fecha de Salida"
+              style="width: 300px"
+            />
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" color="negative" v-close-popup></q-btn>
@@ -132,13 +139,14 @@
 import { ref, onMounted } from "vue";
 import { useClienteStore } from "../stores/clientes";
 import { useBusStore } from "../stores/buses";
+import { useRutasStore } from "../stores/rutas"; // Import the Rutas store
 
 const clienteStore = useClienteStore();
 const busStore = useBusStore();
+const rutasStore = useRutasStore();
 
-const fixed = ref(false); // Add this line to define the ref for the modal
-const text = ref("Agregar Cliente"); // Set the initial text for the modal
-
+const fixed = ref(false);
+const text = ref("Agregar Cliente");
 const filas = generateBusLayout(4, 10);
 const mostrarContenido = ref(false);
 const asientoSeleccionado = ref(null);
@@ -147,10 +155,17 @@ const telefono = ref("");
 const nombre = ref("");
 const mostrarModal = ref(false);
 const busSeleccionado = ref(null);
+const rutas = ref([]); // Add this line
 const buses = ref([]);
 const fechaSalida = ref(null);
 
 onMounted(async () => {
+   try {
+    await rutasStore.getRuta(); // Use the Rutas store to fetch routes
+    rutas.value = rutasStore.rutas.map((ruta) => ruta.nombre);
+  } catch (error) {
+    console.error("Error al cargar la lista de rutas:", error);
+  }
   try {
     await busStore.getBuses();
     buses.value = busStore.buses.map((bus) => bus.placa);
@@ -305,5 +320,10 @@ function generateBusLayout(filas, asientosPorFila) {
 
 .venta-dialog {
   max-width: 400px;
+}
+
+/* Add this block for dark mode */
+.q-theme-dark {
+  color: black;
 }
 </style>
