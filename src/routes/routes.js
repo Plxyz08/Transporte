@@ -1,4 +1,3 @@
-import Main from "../components/Main.vue";
 import Buses from "../components/Buses.vue";
 import Login from "../components/Login.vue"; 
 import Clientes from "../components/Clientes.vue";
@@ -15,7 +14,6 @@ import { createRouter, createWebHashHistory } from "vue-router";
 
 const routes = [
     { path: "/", component: Login, name: "Login" }, 
-    { path: "/Login", component: Login, name: "Login" }, 
     {
         path: "/Menu", component: Menu,
         children: [
