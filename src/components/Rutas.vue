@@ -36,7 +36,7 @@
       <div class="btn-agregar" style="margin-bottom: 5%">
         <q-btn color="primary" label="Agregar" @click="agregarRuta()" />
       </div>
-      <q-table title="Rutas" :rows="rows" :columns="columns" row-key="name">
+      <q-table title="Rutas" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows" :columns="columns" row-key="name">
         <template v-slot:body-cell-estado="props">
           <q-td :props="props">
             <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>

@@ -29,7 +29,7 @@
             <div class="btn-agregar" style="margin-bottom: 5%;">
                 <q-btn color="primary" label="Agregar" @click="agregarHorario()" />
             </div>
-            <q-table title="Horario" :rows="rows" :columns="columns" row-key="name">
+            <q-table title="Horario" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows" :columns="columns" row-key="name">
                 <template v-slot:body-cell-estado="props">
                     <q-td :props="props">
                         <label for="" v-if="props.row.estado == 1" style="color: green;">Activo</label>

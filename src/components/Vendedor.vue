@@ -48,7 +48,7 @@
         </div>
         <q-input v-model="searchPlaca" label="Buscar por Cedula" style="width: 300px; border-radius: 5
               px; background-color: azure; position:relative; left: 80%;" />
-        <q-table title="Vendedores" :rows="rows" :columns="columns" row-key="name">
+        <q-table title="Vendedores" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows" :columns="columns" row-key="name">
           <template v-slot:body-cell-estado="props">
             <q-td :props="props">
               <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>

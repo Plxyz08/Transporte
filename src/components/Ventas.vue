@@ -1,7 +1,7 @@
 <template>
     <div>
       <h3>Ventas de Boletos</h3>
-      <q-table title="Ventas de Boletos" :rows="tickets" :columns="columns" row-key="id">
+      <q-table title="Ventas de Boletos" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="tickets" :columns="columns" row-key="id">
         <template v-slot:body-cell-acciones="props">
           <q-td :props="props">
             <q-btn color="green" style="margin-right: 5px" @click="imprimirTicket(props.row)">
