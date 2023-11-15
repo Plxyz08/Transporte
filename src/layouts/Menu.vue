@@ -131,16 +131,14 @@ export default {
     const leftDrawerOpen = ref(false);
     const useAdmin = useAdminStore();
     const router = useRouter();
-    const usuarioAutenticado = ref(!!useAdmin.token);
 
     const cerrarSesion = () => {
-      useAdmin.logout(); // Llama a la función de logout desde tu almacén
-      router.push({ name: "Login" }); // Redirige al usuario a la página de inicio de sesión
+      useAdmin.logout();
+      router.push({ name: "Login" });
     };
 
     return {
       leftDrawerOpen,
-      usuarioAutenticado,
       cerrarSesion,
       toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value;
