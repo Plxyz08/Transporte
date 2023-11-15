@@ -1,69 +1,143 @@
 <template>
-    <div class="q-gutter-md">
-        <div class="bus-layout">
-            <div class="asientos" v-if="mostrarContenido">
-                <h4>Seleccione la silla</h4>
-                <div class="fila" v-for="(fila, filaIndex) in filas" :key="filaIndex">
-                    <div class="asiento" v-for="(asiento, asientoIndex) in fila" :key="asiento.numero">
-                        <button @click="seleccionarAsiento(asiento)" :class="{
-                            'asiento-button': true,
-                            'selected': asientoSeleccionado === asiento,
-                            'reserved': asiento.reservado,
-                        }">
-                            <q-icon :name="asiento.reservado ? 'check' : 'event_seat'" class="asiento-icon"></q-icon>
-                            {{ asiento.numero }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div v-else>
-                <q-btn @click="mostrarModalVenta" icon="add" color="primary">Agregar venta</q-btn>
-            </div>
-            <div v-if="asientoSeleccionado" class="formulario">
-                <h4>Asiento #{{ asientoSeleccionado.numero }}</h4>
-                <q-btn type="submit" color="primary" label="Buscar cliente" @click="buscarCliente" class="q-ma-md"></q-btn>
-                <q-btn type="submit" color="primary" label="Agregar cliente" class="q-ma-md"></q-btn>
-                <form @submit.prevent="comprarBoleto">
-                    <label for="cedula">Cédula:</label>
-                    <q-input type="text" id="cedula" v-model="cedula" outlined label="Cédula" required></q-input>
-                    <label for="telefono">Teléfono:</label>
-                    <q-input type="tel" id="telefono" v-model="telefono" outlined label="Teléfono" required></q-input>
-                    <label for="nombre">Nombre:</label>
-                    <q-input type="text" id="nombre" v-model="nombre" outlined label="Nombre" required></q-input>
-                    <q-btn type="submit" color="primary" label="Confirmar compra" class="q-ma-md"></q-btn>
-                    <!-- Mostrar mensajes de cliente encontrado o no encontrado -->
-                    <q-banner v-if="clienteEncontrado" color="positive" icon="check" dense>
-                        Cliente encontrado
-                    </q-banner>
-                    <q-banner v-if="clienteNoEncontrado" color="negative" icon="warning" dense>
-                        Cliente no encontrado
-                    </q-banner>
-                </form>
-            </div>
-            <q-dialog v-model="mostrarModal" class="venta-dialog">
-                <q-card class="modal-content">
-                    <q-card-section class="q-pa-md">
-                        <h4>Registrar Venta</h4>
-                        <q-select v-model="busSeleccionado" label="Bus" :options="buses"></q-select>
-                        <q-date class="q-ma-md" v-model="fechaSalida" label="Fecha de Salida" />
-                    </q-card-section>
-                    <q-card-actions align="right">
-                        <q-btn flat label="Cancelar" color="negative" v-close-popup></q-btn>
-                        <q-btn flat label="Guardar" color="primary" @click="guardarVenta" />
-                    </q-card-actions>
-                </q-card>
-            </q-dialog>
+  <div class="q-gutter-md">
+    <div class="bus-layout">
+      <div class="asientos" v-if="mostrarContenido">
+        <h4>Seleccione la silla</h4>
+        <div class="fila" v-for="(fila, filaIndex) in filas" :key="filaIndex">
+          <div
+            class="asiento"
+            v-for="(asiento, asientoIndex) in fila"
+            :key="asiento.numero"
+          >
+            <button
+              @click="seleccionarAsiento(asiento)"
+              :class="{
+                'asiento-button': true,
+                selected: asientoSeleccionado === asiento,
+                reserved: asiento.reservado,
+              }"
+            >
+              <q-icon
+                :name="asiento.reservado ? 'check' : 'event_seat'"
+                class="asiento-icon"
+              ></q-icon>
+              {{ asiento.numero }}
+            </button>
+          </div>
         </div>
+      </div>
+      <div v-else>
+        <q-btn @click="mostrarModalVenta" icon="add" color="primary">Agregar venta</q-btn>
+      </div>
+      <div v-if="asientoSeleccionado" class="formulario">
+        <h4>Asiento #{{ asientoSeleccionado.numero }}</h4>
+        <q-btn
+          type="submit"
+          color="primary"
+          label="Buscar cliente"
+          @click="buscarCliente"
+          class="q-ma-md"
+        ></q-btn>
+        <q-btn
+          type="submit"
+          color="primary"
+          label="Agregar cliente"
+          @click="agregarCliente"
+          class="q-ma-md"
+        ></q-btn>
+        <form @submit.prevent="comprarBoleto">
+          <label for="cedula">Cédula:</label>
+          <q-input
+            type="text"
+            id="cedula"
+            v-model="cedula"
+            outlined
+            label="Cédula"
+            required
+          ></q-input>
+          <label for="telefono">Teléfono:</label>
+          <q-input
+            type="tel"
+            id="telefono"
+            v-model="telefono"
+            outlined
+            label="Teléfono"
+            required
+          ></q-input>
+          <label for="nombre">Nombre:</label>
+          <q-input
+            type="text"
+            id="nombre"
+            v-model="nombre"
+            outlined
+            label="Nombre"
+            required
+          ></q-input>
+          <q-btn
+            type="submit"
+            color="primary"
+            label="Confirmar compra"
+            class="q-ma-md"
+          ></q-btn>
+          <!-- Mostrar mensajes de cliente encontrado o no encontrado -->
+          <q-banner v-if="clienteEncontrado" color="positive" icon="check" dense>
+            Cliente encontrado
+          </q-banner>
+          <q-banner v-if="clienteNoEncontrado" color="negative" icon="warning" dense>
+            Cliente no encontrado
+          </q-banner>
+        </form>
+      </div>
+      <q-dialog v-model="mostrarModal" class="venta-dialog">
+        <q-card class="modal-content">
+          <q-card-section class="q-pa-md">
+            <h4>Registrar Venta</h4>
+            <q-select v-model="busSeleccionado" label="Bus" :options="buses"></q-select>
+            <q-date class="q-ma-md" v-model="fechaSalida" label="Fecha de Salida" />
+          </q-card-section>
+          <q-card-actions align="right">
+            <q-btn flat label="Cancelar" color="negative" v-close-popup></q-btn>
+            <q-btn flat label="Guardar" color="primary" @click="guardarVenta" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+      <q-dialog v-model="fixed">
+        <q-card class="modal-content">
+          <q-card-section class="row items-center q-pb-none" style="color: black">
+            <div class="text-h6">{{ text }}</div>
+            <q-space />
+            <q-btn icon="close" flat round dense v-close-popup />
+          </q-card-section>
+          <q-separator />
+
+          <q-card-section style="max-height: 50vh" class="scroll">
+            <q-input v-model="cedula" label="cedula" style="width: 300px" />
+            <q-input v-model="nombre" label="nombre" style="width: 300px" />
+            <q-input v-model="telefono" label="telefono" style="width: 300px" />
+          </q-card-section>
+
+          <q-separator />
+
+          <q-card-actions align="right">
+            <q-btn flat label="Cerrar" color="primary" v-close-popup />
+            <q-btn flat label="Guardar" color="primary" @click="agregarEditarCliente" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
     </div>
+  </div>
 </template>
   
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useClienteStore } from '../stores/clientes';
-import { useBusStore } from '../stores/buses';
+import { ref, onMounted } from "vue";
+import { useClienteStore } from "../stores/clientes";
+import { useBusStore } from "../stores/buses";
 
 const clienteStore = useClienteStore();
 const busStore = useBusStore();
+
+const fixed = ref(false); // Add this line to define the ref for the modal
+const text = ref("Agregar Cliente"); // Set the initial text for the modal
 
 const filas = generateBusLayout(4, 10);
 const mostrarContenido = ref(false);
@@ -73,17 +147,18 @@ const telefono = ref('');
 const nombre = ref('');
 const mostrarModal = ref(false);
 const busSeleccionado = ref(null);
+const rutas = ref([]); // Add this line
 const buses = ref([]);
 const fechaSalida = ref(null);
 
 
 onMounted(async () => {
-    try {
-        await busStore.getBuses();
-        buses.value = busStore.buses.map((bus) => bus.placa);
-    } catch (error) {
-        console.error('Error al cargar la lista de placas de los buses:', error);
-    }
+  try {
+    await busStore.getBuses();
+    buses.value = busStore.buses.map((bus) => bus.placa);
+  } catch (error) {
+    console.error("Error al cargar la lista de placas de los buses:", error);
+  }
 });
 
 const seleccionarAsiento = (asiento) => {
@@ -228,6 +303,11 @@ function generateBusLayout(filas, asientosPorFila) {
 
 .venta-dialog {
     max-width: 400px;
+}
+
+/* Add this block for dark mode */
+.q-theme-dark {
+  color: black;
 }
 </style>
   
