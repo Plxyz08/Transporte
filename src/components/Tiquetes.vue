@@ -21,12 +21,13 @@
             </div>
             <div v-if="asientoSeleccionado" class="formulario">
                 <h4>Asiento #{{ asientoSeleccionado.numero }}</h4>
-                <q-btn type="submit" color="primary" label="Buscar cliente" @click="buscarCliente" class="q-ma-md"></q-btn>
+                <q-btn type="submit" color="primary" label="Buscar cliente" @click="filtrarclientes"
+                    class="q-ma-md"></q-btn>
                 <q-btn type="submit" color="primary" label="Agregar cliente" @click="mostrarDialogoAgregarEditarCliente"
                     class="q-ma-md"></q-btn>
                 <form @submit.prevent="comprarBoleto">
                     <label for="cedula">Cédula:</label>
-                    <q-input type="text" id="cedula" v-model="cedula" outlined label="Cédula" required></q-input>
+                    <q-input type="text" id="cedula" v-model="buscarCedula" outlined label="Cédula" required></q-input>
                     <label for="telefono">Teléfono:</label>
                     <q-input type="tel" id="telefono" v-model="telefono" outlined label="Teléfono" required></q-input>
                     <label for="nombre">Nombre:</label>
@@ -86,7 +87,7 @@
 <script setup>
 import axios from "axios";
 import { ref, onMounted } from "vue";
-import { useClienteStore } from "../stores/clientes";
+import { useClienteStore } from "../stores/clientes.js";
 import { useBusStore } from "../stores/buses";
 import { useRutasStore } from "../stores/rutas";
 
@@ -96,6 +97,8 @@ const rutasStore = useRutasStore();
 
 const fixed = ref(false);
 const text = ref("Agregar Cliente");
+
+const rows = ref([]);
 
 const filas = generateBusLayout(4, 10);
 const mostrarContenido = ref(false);
@@ -111,13 +114,13 @@ const buses = ref([]);
 const fechaSalida = ref(null);
 const clienteEncontrado = ref(false);
 const clienteNoEncontrado = ref(false);
-
 const nuevaCedula = ref('');
 const nuevoNombre = ref('');
 const nuevoTelefono = ref('');
 const buscarCedula = ref('');
 
 onMounted(async () => {
+    await clienteStore.getCliente();
     try {
         await busStore.getBuses();
         buses.value = busStore.buses.map((bus) => bus.placa);
@@ -151,18 +154,18 @@ const comprarBoleto = () => {
     if (asientoSeleccionado.value) {
         // Tu lógica para confirmar la compra del boleto y guardar los detalles de la venta
         const venta = {
-            numeroTicket: generateTicketNumber(), // Implementa tu lógica para generar el número de ticket
-            nombreVendedor: "Nombre del Vendedor", // Reemplaza con el nombre del vendedor real
+            numeroTicket: generateTicketNumber(),
+            nombreVendedor: "Nombre del Vendedor",
             fechaVenta: new Date(),
             fechaSalida: fechaSalida.value,
-            horaSalida: "Hora de Salida", // Reemplaza con la hora real de salida
+            horaSalida: "Hora de Salida",
             ccPasajero: cedula.value,
             nombrePasajero: nombre.value,
             vehiculo: busSeleccionado.value,
-            origen: "Origen", // Reemplaza con el origen real
-            destino: "Destino", // Reemplaza con el destino real
+            origen: "Origen",
+            destino: "Destino",
             silla: asientoSeleccionado.value.numero,
-            valor: "Valor", // Reemplaza con el valor real
+            valor: "Valor",
         };
 
         // Agregar la venta a la tabla de tickets usando el clienteStore
@@ -225,28 +228,30 @@ const cerrarDialogo = () => {
     telefono.value = '';
 };
 
+const filtrarclientes = async () => {
+    clienteEncontrado.value = false; // Reiniciar la bandera
+    clienteNoEncontrado.value = false; // Reiniciar la bandera
 
-const buscarCliente = async () => {
-    try {
-        if (!cedula.value) {
-            showErrorMessage('Por favor, ingresa la cédula.');
-            return;
+    if (buscarCedula.value.trim() === "") {
+        // Si no hay cédula especificada, muestra todos los clientes
+        clienteStore.clientes = clienteStore.clientes;
+    } else {
+        // Filtra los clientes por cédula
+        try {
+            const clienteEncontrado = await clienteStore.getClienteByCedula(buscarCedula.value.trim());
+            clienteStore.clientes = clienteEncontrado ? [clienteEncontrado] : [];
+            if (clienteEncontrado) {
+                console.log("Cliente encontrado");
+                clienteEncontrado.value = true; // Actualizar la bandera
+            } else {
+                console.log("Cliente no encontrado");
+                clienteNoEncontrado.value = true; // Actualizar la bandera
+                // Puedes mostrar un mensaje al usuario indicando que el cliente no fue encontrado
+            }
+        } catch (error) {
+            console.error("Error al buscar cliente por cédula:", error);
+            // Manejar el error según tus necesidades
         }
-
-        const clientInfo = await clienteStore.getClienteByCedula(cedula.value);
-
-        if (clientInfo) {
-            telefono.value = clientInfo.telefono;
-            nombre.value = clientInfo.nombre;
-            clienteEncontrado.value = true;
-            clienteNoEncontrado.value = false;
-        } else {
-            clienteEncontrado.value = false;
-            clienteNoEncontrado.value = true;
-            showErrorMessage('Cliente no encontrado');
-        }
-    } catch (error) {
-        showErrorMessage('Error al buscar el cliente');
     }
 };
 
@@ -278,8 +283,8 @@ const agregarCliente = async () => {
 
         showErrorMessage('Cliente agregado con éxito');
     } catch (error) {
-        
-        
+
+
     }
 };
 

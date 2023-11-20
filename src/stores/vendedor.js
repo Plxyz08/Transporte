@@ -21,9 +21,8 @@ export const useVendedorStore = defineStore('vendedor', () => {
             throw error
         }
     }
-
     const putVendedor = async (id, data) => {
-        try {
+        try { 
             let res = await axios.put(`vendedor/vendedor/${id}`, data);
             return res
         } catch (error) {
