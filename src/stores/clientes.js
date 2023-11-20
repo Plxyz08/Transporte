@@ -13,6 +13,14 @@ export const useClienteStore = defineStore('cliente', () => {
             throw error
         }
     }
+    const getClienteByCedula = async (cedula) => {
+        try {
+            let res = await axios.get(`cliente/${cedula}`);
+            return res.data.cliente;
+        } catch (error) {
+            throw error;
+        }
+    }    
     const postCliente = async (data) =>{
         try {
             let res = await axios.post("cliente/cliente/agregar", data);
@@ -50,6 +58,6 @@ export const useClienteStore = defineStore('cliente', () => {
 
     return {
         clientes,
-        getCliente, postCliente, putCliente, putClienteInactivar, putClienteActivar
+        getCliente, getClienteByCedula, postCliente, putCliente, putClienteInactivar, putClienteActivar
     };
 });
