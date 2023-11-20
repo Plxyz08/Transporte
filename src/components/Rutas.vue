@@ -10,17 +10,11 @@
         <q-separator />
 
         <q-card-section style="max-height: 50vh" class="scroll">
-          <q-input
-            v-model="precio"
-            label="Precio"
-            style="width: 300px"
-          />
-          <q-input
-            v-model="origen"
-            label="Origen"
-            style="width: 300px"
-          />
+          <q-input v-model="precio" label="Precio" style="width: 300px" />
+          <q-input v-model="origen" label="Origen" style="width: 300px" />
           <q-input v-model="destino" label="Destino" style="width: 300px" />
+          <q-select v-model="horarioSeleccionado" :options="optionsHorarios" label="Selecciona un horario"
+            style="width: 300px" />
         </q-card-section>
 
         <q-separator />
@@ -36,7 +30,8 @@
       <div class="btn-agregar" style="margin-bottom: 5%">
         <q-btn color="primary" label="Agregar" @click="agregarRuta()" />
       </div>
-      <q-table title="Rutas" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows" :columns="columns" row-key="name">
+      <q-table title="Rutas" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows" :columns="columns"
+        row-key="name">
         <template v-slot:body-cell-estado="props">
           <q-td :props="props">
             <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
@@ -45,24 +40,13 @@
         </template>
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="blue-4"
-              style="margin-right: 5px"
-              text-color="black"
-              @click="EditarRuta(props.row._id)"
-            >
+            <q-btn color="blue-4" style="margin-right: 5px" text-color="black" @click="EditarRuta(props.row._id)">
               <q-icon name="edit"> </q-icon>
             </q-btn>
-            <q-btn
-              color="green-4"
-              glossy
-              @click="InactivarRuta(props.row._id)"
-              v-if="props.row.estado == 1"
-              ><q-icon name="toggle_on"
-            /></q-btn>
+            <q-btn color="green-4" glossy @click="InactivarRuta(props.row._id)" v-if="props.row.estado == 1"><q-icon
+                name="toggle_on" /></q-btn>
             <q-btn color="red-4" glossy @click="ActivarRuta(props.row._id)" v-else>
-              <q-icon name="toggle_off"> </q-icon
-            ></q-btn>
+              <q-icon name="toggle_off"> </q-icon></q-btn>
           </q-td>
         </template>
       </q-table>
@@ -75,6 +59,10 @@ import axios from "axios";
 import { ref, onMounted } from "vue";
 import { format } from "date-fns";
 import { useRutasStore } from "../stores/rutas.js";
+import { useHorarioStore } from "../stores/horario.js";
+
+const horarioStore = useHorarioStore();
+
 const rutasStore = useRutasStore();
 
 let rutas = ref([]);
@@ -85,6 +73,8 @@ let precio = ref("");
 let origen = ref();
 let destino = ref("");
 let cambio = ref(0);
+let horarioSeleccionado = ref("");
+let optionsHorarios = ref([]);
 
 async function obtenerInfo() {
   try {
@@ -96,21 +86,40 @@ async function obtenerInfo() {
   }
 }
 
+async function obtenerHorarios() {
+  try {
+    await horarioStore.getHorario();
+
+    optionsHorarios.value = horarioStore.horarios.map(horario => ({
+      label: `${horario.hora_partida} - ${horario.hora_llegada}`,
+      value: horario._id,
+    }));
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
 onMounted(async () => {
   obtenerInfo();
+  await obtenerHorarios()
 });
 
 const columns = [
   { name: "precio", label: "Precio", field: "precio", sortable: true },
-  { name: "origen", label: "Origen", field: "origen", sortable: true },
-  { name: "destino", label: "Destino", field: "destino" },
   {
-    name: "estado",
-    label: "Estado",
-    field: "estado",
-    sortable: true,
-    format: (val) => (val ? "Activo" : "Inactivo"),
+    name: "hora_partida",
+    label: "Hora Partida",
+    field: (row) => row.horario_id.hora_partida,
   },
+  {
+    name: "hora_llegada",
+    label: "Hora LLegada",
+    field: (row) => row.horario_id.hora_llegada,
+  },
+  { name: "origen", label: "Origen", field: "origen" },
+  { name: "destino", label: "Destino", field: "destino" },
+  { name: "estado", label: "Estado", field: "estado", sortable: true },
   {
     name: "createAT",
     label: "Fecha de Creación",
@@ -118,12 +127,7 @@ const columns = [
     sortable: true,
     format: (val) => format(new Date(val), "yyyy-MM-dd"),
   },
-  {
-    name: "opciones",
-    label: "Opciones",
-    field: (row) => null,
-    sortable: false,
-  },
+  { name: "opciones", label: "Opciones", sortable: false },
 ];
 
 function agregarRuta() {
@@ -139,6 +143,8 @@ async function agregarEditarRuta() {
       precio: precio.value,
       origen: origen.value,
       destino: destino.value,
+      horario_id: horarioSeleccionado._rawValue.value
+
     });
     limpiar();
     obtenerInfo();
@@ -150,6 +156,8 @@ async function agregarEditarRuta() {
         precio: precio.value,
         origen: origen.value,
         destino: destino.value,
+        horario_id: horarioSeleccionado._rawValue.value
+
       });
       limpiar();
       obtenerInfo();
@@ -157,6 +165,8 @@ async function agregarEditarRuta() {
     }
   }
 }
+
+
 
 function limpiar() {
   precio.value = "";

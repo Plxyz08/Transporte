@@ -14,7 +14,7 @@ export const useRutasStore = defineStore('ruta', () => {
     }
     const postRuta = async (data) =>{
         try {
-            let res = await axios.post("ruta/ruta/agregar", data);
+            let res = await axios.post("ruta/agregar", data);
             return res
         } catch (error) {
             throw error

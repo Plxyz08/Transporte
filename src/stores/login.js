@@ -22,7 +22,7 @@ export const useAdminStore = defineStore('admin', () => {
   };
 
   const logout = () => {
-    token.value = ''; // Set the token to an empty string to indicate that the user has logged out
+    token.value = ''; 
   };
 
   return {
