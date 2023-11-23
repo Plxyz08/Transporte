@@ -1,5 +1,5 @@
 import Buses from "../components/Buses.vue";
-import Login from '../components/Login.vue';
+const Login = () => import('../components/Login.vue');
 import Clientes from "../components/Clientes.vue";
 import Horarios from "../components/Horario.vue";
 import Menu from "../layouts/Menu.vue";
