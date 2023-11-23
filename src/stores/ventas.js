@@ -2,72 +2,78 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 import { ref } from 'vue';
 
-export const useVentasStore = defineStore('ventas', () => {
+export const useVentasStore = defineStore('ticket', () => {
   const tickets = ref([]);
 
-  const fetchTickets = async () => {
+  const getTicket = async () => {
     try {
-      const response = await axios.get('/api/tickets'); // Update the URL as per your backend API endpoint
-      tickets.value = response.data;
+      let res = await axios.get('/ticket/ticket');
+      tickets.value = res.data.tickets;
     } catch (error) {
       throw error;
     }
   };
 
-  const agregarTicket = async (ticket) => {
+  const postTicket = async (data) => {
     try {
-      const response = await axios.post('/api/agregar', ticket); // Update the URL as per your backend API endpoint
-      return response.data;
+      let res = await axios.post('/ticket/agregar', data);
+      return res
     } catch (error) {
-      throw error;
+      console.error('Error adding ticket:', error);
+      throw error
     }
   };
 
-  const editarTicket = async (id, data) => {
+  const putEditarTicket = async (id, data) => {
     try {
-      const response = await axios.put(`/api/editarTicket/${id}`, data); // Update the URL as per your backend API endpoint
-      return response.data;
+      let res = await axios.put(`/editarTicket/${id}`, data);
+      return res
     } catch (error) {
-      throw error;
+      console.error('Error editing ticket:', error);
+      throw error
     }
   };
 
-  const inactivarTicket = async (id) => {
+  const putTicketInactivar = async (id) => {
     try {
-      const response = await axios.put(`/api/inactivarTicket/${id}`); // Update the URL as per your backend API endpoint
-      return response.data;
+      let res = await axios.put(`/ticket/inactivarTicket/${id}`);
+      return res;
     } catch (error) {
       console.error('Error inactivating ticket:', error);
+      throw error;
     }
   };
 
-  const activarTicket = async (id) => {
+  const putTicketActivar = async (id) => {
     try {
-      const response = await axios.put(`/api/activarTicket/${id}`); // Update the URL as per your backend API endpoint
-      return response.data;
+      let res = await axios.put(`ticket/activarTicket/${id}`);
+      return res
     } catch (error) {
       console.error('Error activating ticket:', error);
+      throw error
     }
   };
 
   const buscarTickets = async (idRuta, idBus, fecha) => {
     try {
-      const response = await axios.get(`/api/encontrarTickets`, {
+      let response = await axios.get(`/ticket/encontrarTickets`, {
         params: { id_ruta: idRuta, id_bus: idBus, fecha: fecha },
       });
-      return response.data;
+      return response.data; // Adjusted to return only the data
     } catch (error) {
+      console.error('Error searching tickets:', error);
       throw error;
     }
   };
 
+
   return {
     tickets,
-    fetchTickets,
-    agregarTicket,
-    editarTicket,
-    inactivarTicket,
-    activarTicket,
-    buscarTickets,
+    getTicket,
+    postTicket,
+    putEditarTicket,
+    putTicketInactivar,
+    putTicketActivar,
+    buscarTickets
   };
 });

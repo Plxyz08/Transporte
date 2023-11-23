@@ -1,14 +1,9 @@
 <template>
   <div>
     <h3>Ventas de Boletos</h3>
-    <q-table
-      title="Ventas de Boletos"
-      style="width: 1500px; margin-top: 10px; margin-left: -10%;"
-      :rows="tickets"
-      :columns="columns"
-      row-key="id"
-    >
-      <template v-slot:body-cell-acciones="props">
+    <q-table title="Ventas de Boletos" style="width: 1500px; margin-top: 10px; margin-left: -10%;" :rows="rows"
+      :columns="columns" row-key="name">
+      <template v-slot:body-cell-estado="props">
         <q-td :props="props">
           <q-btn color="green" style="margin-right: 5px" @click="imprimirTicket(props.row)">
             Imprimir
@@ -21,44 +16,45 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useVentasStore } from '../stores/ventas'; // Adjust the path based on your actual file structure
+import { useVentasStore } from '../stores/ventas'; // Ajusta la ruta según tu estructura de archivos
 import { format } from 'date-fns';
 
-const store = useVentasStore();
+const ventasStore = useVentasStore();
+
+const rows = ref([]);
+const dataLoaded = ref(false);
+
 const columns = [
-  { name: 'numeroTicket', label: 'Número de Ticket', field: 'numeroTicket' },
-  { name: 'nombreVendedor', label: 'Nombre del Vendedor', field: 'nombreVendedor' },
-  { name: 'fechaVenta', label: 'Fecha de Venta', field: 'fechaVenta', format: (val) => format(new Date(val), 'yyyy-MM-dd') },
-  { name: 'fechaSalida', label: 'Fecha de Salida', field: 'fechaSalida', format: (val) => format(new Date(val), 'yyyy-MM-dd') },
-  { name: 'horaSalida', label: 'Hora de Salida', field: 'horaSalida' },
-  { name: 'ccPasajero', label: 'Cédula del Pasajero', field: 'ccPasajero' },
-  { name: 'nombrePasajero', label: 'Nombre del Pasajero', field: 'nombrePasajero' },
-  { name: 'vehiculo', label: 'Vehículo', field: 'vehiculo' },
-  { name: 'origen', label: 'Origen', field: 'origen' },
-  { name: 'destino', label: 'Destino', field: 'destino' },
-  { name: 'silla', label: 'Número de Silla', field: 'silla' },
-  { name: 'valor', label: 'Valor', field: 'valor' },
-  { name: 'acciones', label: 'Acciones', field: 'acciones', sortable: false },
+  { name: 'numeroTicket', label: '# de Ticket', align: 'left', field: 'numeroTicket', sortable: true },
+  { name: 'nombreVendedor', label: 'Vendedor', align: 'left', field: 'nombreVendedor', sortable: true },
+  { name: 'fechaVenta', label: 'Fecha de Venta', align: 'left', field: 'fechaVenta', format: (val) => format(new Date(val), 'yyyy-MM-dd'), sortable: true },
+  { name: 'fechaSalida', label: 'Fecha de Salida', align: 'left', field: 'fechaSalida', format: (val) => format(new Date(val), 'yyyy-MM-dd'), sortable: true },
+  { name: 'horaSalida', label: 'Hora de Salida', align: 'left', field: 'horaSalida', sortable: true },
+  { name: 'ccPasajero', label: 'Pasajero', align: 'left', field: 'ccPasajero', sortable: true },
+  { name: 'nombrePasajero', label: 'Nombre del Pasajero', align: 'left', field: 'nombrePasajero', sortable: true },
+  { name: 'vehiculo', label: 'Vehículo', align: 'left', field: 'vehiculo', sortable: true },
+  { name: 'origen', label: 'Origen', align: 'left', field: 'origen', sortable: true },
+  { name: 'destino', label: 'Destino', align: 'left', field: 'destino', sortable: true },
+  { name: 'silla', label: '# de Silla', align: 'left', field: 'silla', sortable: true },
+  { name: 'valor', label: 'Valor', align: 'left', field: 'valor', sortable: true },
+  { name: 'acciones', label: 'Acciones', align: 'center', field: 'acciones', sortable: false },
 ];
 
-const tickets = ref([]);
+onMounted(async () => {
+  await obtenerInfo();
+});
 
-// Lógica para obtener los datos de los tickets existentes (utilizando el store).
-async function obtenerTicketsExistentes() {
+async function obtenerInfo() {
   try {
-    await store.fetchTickets();
-    tickets.value = store.tickets;
+    await ventasStore.getTicket();
+    rows.value = ventasStore.tickets;
+    dataLoaded.value = true;
+    console.log('Datos de la API:', rows);
   } catch (error) {
-    console.error('Error al obtener los tickets:', error);
+    console.error(error);
   }
 }
 
-// Ejecuta la función para obtener los tickets existentes cuando el componente se monta.
-onMounted(() => {
-  obtenerTicketsExistentes();
-});
-
-// Función para imprimir un ticket (debes implementar la lógica real aquí).
 function imprimirTicket(venta) {
   console.log('Imprimir ticket', venta);
 }

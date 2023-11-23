@@ -32,14 +32,16 @@
                     <q-input type="tel" id="telefono" v-model="telefono" outlined label="Teléfono" required></q-input>
                     <label for="nombre">Nombre:</label>
                     <q-input type="text" id="nombre" v-model="nombre" outlined label="Nombre" required></q-input>
-                    <q-btn type="submit" color="primary" label="Confirmar compra" class="q-ma-md"></q-btn>
-                    <!-- Mostrar mensajes de cliente encontrado o no encontrado -->
+
                     <q-banner v-if="clienteEncontrado" color="positive" icon="check" dense>
                         Cliente encontrado
                     </q-banner>
                     <q-banner v-if="clienteNoEncontrado" color="negative" icon="warning" dense>
                         Cliente no encontrado
                     </q-banner>
+
+
+                    <q-btn type="submit" color="primary" label="Confirmar compra" class="q-ma-md"></q-btn>
                 </form>
             </div>
             <q-dialog v-model="mostrarModal" class="venta-dialog">
@@ -239,9 +241,13 @@ const filtrarclientes = async () => {
         // Filtra los clientes por cédula
         try {
             const clienteEncontrado = await clienteStore.getClienteByCedula(buscarCedula.value.trim());
-            clienteStore.clientes = clienteEncontrado ? [clienteEncontrado] : [];
+            console.log("Resultado de la búsqueda:", clienteEncontrado);
             if (clienteEncontrado) {
                 console.log("Cliente encontrado");
+                // Actualizar el formulario con la información del cliente encontrado
+                cedula.value = clienteEncontrado.cedula;
+                nombre.value = clienteEncontrado.nombre;
+                telefono.value = clienteEncontrado.telefono;
                 clienteEncontrado.value = true; // Actualizar la bandera
             } else {
                 console.log("Cliente no encontrado");
@@ -254,7 +260,6 @@ const filtrarclientes = async () => {
         }
     }
 };
-
 
 const agregarCliente = async () => {
     try {
