@@ -44,7 +44,7 @@
       >
     </div>
     <div class="card">
-      <router-link to="/"
+      <router-link to="/Ventas"
         > <q-icon style="font-size: 6rem" name="payments" />
         <br />Ventas</router-link
       >
