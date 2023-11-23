@@ -1,5 +1,5 @@
 import Buses from "../components/Buses.vue";
-const Login = () => import('../components/Login.vue');
+const login = () => import('../components/login.vue');
 import Clientes from "../components/Clientes.vue";
 import Horarios from "../components/Horario.vue";
 import Menu from "../layouts/Menu.vue";
@@ -13,7 +13,7 @@ import Ventas from "../components/Ventas.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 
 const routes = [
-    { path: "/", component: Login, name: "Login" }, 
+    { path: "/", component: login, name: "login" }, 
     {
         path: "/Menu", component: Menu,
         children: [
