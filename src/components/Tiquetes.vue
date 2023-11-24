@@ -314,6 +314,10 @@ const showErrorMessage = (message) => {
 </script>
 
 <style scoped>
+* {
+    color: black;
+}
+
 .bus-layout {
     display: flex;
     flex-direction: row;
@@ -378,6 +382,13 @@ const showErrorMessage = (message) => {
 
 .venta-dialog {
     max-width: 400px;
+}
+
+.q-select__label {
+    color: black;
+}
+.q-item__label {
+    color: black;
 }
 
 .q-theme-dark {
