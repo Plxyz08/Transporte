@@ -134,7 +134,7 @@ export default {
 
     const cerrarSesion = () => {
       useAdmin.logout();
-      router.push({ name: "Login" });
+      router.push({ name: "login" });
     };
 
     return {
