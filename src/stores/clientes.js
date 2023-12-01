@@ -15,7 +15,7 @@ export const useClienteStore = defineStore('cliente', () => {
     }
     const getClienteByCedula = async (cedula) => {
         try {
-            let res = await axios.get(`cliente/${cedula}`);
+            let res = await axios.get(`/cliente/cliente/${cedula}`);
             return res.data.cliente;
         } catch (error) {
             throw error;

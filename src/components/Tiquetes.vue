@@ -1,6 +1,11 @@
 <template>
     <div class="q-gutter-md">
         <div class="bus-layout">
+            <div v-if="busSeleccionado">
+                <p>Ruta Seleccionada: {{ ruta }}</p>
+                <p>Bus Seleccionado: {{ busSeleccionado }}</p>
+                <p>Fecha de Salida: {{ fechaSalida }}</p>
+              </div>
             <div class="asientos" v-if="mostrarContenido">
                 <h4>Seleccione la silla</h4>
                 <div class="fila" v-for="(fila, filaIndex) in filas" :key="filaIndex">
@@ -9,6 +14,7 @@
                             'asiento-button': true,
                             selected: asientoSeleccionado === asiento,
                             reserved: asiento.reservado,
+                            confirmed: asiento.confirmado,
                         }">
                             <q-icon :name="asiento.reservado ? 'check' : 'event_seat'" class="asiento-icon"></q-icon>
                             {{ asiento.numero }}
@@ -16,6 +22,7 @@
                     </div>
                 </div>
             </div>
+
             <div v-else>
                 <q-btn @click="mostrarModalVenta" icon="add" color="primary">Agregar venta</q-btn>
             </div>
@@ -102,7 +109,7 @@ const text = ref("Agregar Cliente");
 
 const rows = ref([]);
 
-const filas = generateBusLayout(4, 10);
+const filas = ref([]);
 const mostrarContenido = ref(false);
 const asientoSeleccionado = ref(null);
 const cedula = ref('');
@@ -134,12 +141,16 @@ onMounted(async () => {
         await rutasStore.getRuta();
         rutas.value = rutasStore.rutas.map((ruta) => ({
             value: ruta.id,
-            label: `${ruta.origen} - ${ruta.destino}`,
-            origenDestino: `${ruta.origen} - ${ruta.destino}`
+            label: `${ruta.origen} - ${ruta.destino} - (${ruta.horario_id.hora_partida} - ${ruta.horario_id.hora_llegada})`,
+            origenDestino: `${ruta.origen} - ${ruta.destino}`,
+            horaPartida: ruta.horario_id.hora_partida,
+            horaLlegada: ruta.horario_id.hora_llegada
         }));
     } catch (error) {
         console.error("Error al cargar la lista de rutas o buses:", error);
     }
+
+    filas.value = generateBusLayout(4, 7);
 });
 
 const seleccionarAsiento = (asiento) => {
@@ -154,7 +165,6 @@ const seleccionarAsiento = (asiento) => {
 
 const comprarBoleto = () => {
     if (asientoSeleccionado.value) {
-        // Tu lógica para confirmar la compra del boleto y guardar los detalles de la venta
         const venta = {
             numeroTicket: generateTicketNumber(),
             nombreVendedor: "Nombre del Vendedor",
@@ -170,18 +180,14 @@ const comprarBoleto = () => {
             valor: "Valor",
         };
 
-        // Agregar la venta a la tabla de tickets usando el clienteStore
         clienteStore.agregarTicket(venta);
 
-        // Restablecer valores
         asientoSeleccionado.value.classList.remove("selected-green");
         asientoSeleccionado.value.classList.add("confirmed");
         asientoSeleccionado.value = null;
     }
 };
 
-
-// Función para generar un número de ticket único (solo como ejemplo, implementa la tuya)
 const generateTicketNumber = () => {
     return Math.floor(Math.random() * 1000000) + 1;
 };
@@ -230,46 +236,14 @@ const cerrarDialogo = () => {
     telefono.value = '';
 };
 
-const filtrarclientes = async () => {
-    clienteEncontrado.value = false; // Reiniciar la bandera
-    clienteNoEncontrado.value = false; // Reiniciar la bandera
-
-    if (buscarCedula.value.trim() === "") {
-        // Si no hay cédula especificada, muestra todos los clientes
-        clienteStore.clientes = clienteStore.clientes;
-    } else {
-        // Filtra los clientes por cédula
-        try {
-            const clienteEncontrado = await clienteStore.getClienteByCedula(buscarCedula.value.trim());
-            console.log("Resultado de la búsqueda:", clienteEncontrado);
-            if (clienteEncontrado) {
-                console.log("Cliente encontrado");
-                // Actualizar el formulario con la información del cliente encontrado
-                cedula.value = clienteEncontrado.cedula;
-                nombre.value = clienteEncontrado.nombre;
-                telefono.value = clienteEncontrado.telefono;
-                clienteEncontrado.value = true; // Actualizar la bandera
-            } else {
-                console.log("Cliente no encontrado");
-                clienteNoEncontrado.value = true; // Actualizar la bandera
-                // Puedes mostrar un mensaje al usuario indicando que el cliente no fue encontrado
-            }
-        } catch (error) {
-            console.error("Error al buscar cliente por cédula:", error);
-            // Manejar el error según tus necesidades
-        }
-    }
-};
 
 const agregarCliente = async () => {
     try {
-        // Verificar que los campos no estén vacíos
         if (!nuevaCedula.value || !nuevoNombre.value || !nuevoTelefono.value) {
             showErrorMessage('Todos los campos son obligatorios');
             return;
         }
 
-        // Enviar la solicitud para agregar el nuevo cliente
         const nuevoCliente = {
             cedula: nuevaCedula.value,
             nombre: nuevoNombre.value,
@@ -278,10 +252,8 @@ const agregarCliente = async () => {
 
         await clienteStore.postCliente(nuevoCliente);
 
-        // Actualizar la lista de clientes después de agregar uno nuevo
         await clienteStore.getCliente();
 
-        // Limpiar los campos del nuevo cliente
         nuevaCedula.value = '';
         nuevoNombre.value = '';
         nuevoTelefono.value = '';
@@ -314,10 +286,6 @@ const showErrorMessage = (message) => {
 </script>
 
 <style scoped>
-* {
-    color: black;
-}
-
 .bus-layout {
     display: flex;
     flex-direction: row;
@@ -382,13 +350,6 @@ const showErrorMessage = (message) => {
 
 .venta-dialog {
     max-width: 400px;
-}
-
-.q-select__label {
-    color: black;
-}
-.q-item__label {
-    color: black;
 }
 
 .q-theme-dark {
