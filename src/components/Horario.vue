@@ -12,8 +12,7 @@
                 <q-card-section style="max-height: 50vh" class="scroll">
                     <q-input v-model="hora_partida" label="Hora_partida" style="width: 300px;"  />
                     <q-input v-model="hora_llegada" label="Hora_llegada" style="width: 300px;" />
-                    <q-input v-model="fecha_partida" label="Fecha_partida" style="width: 300px;" />
-                    <q-input v-model="fecha_llegada" label="Fecha_llegada" style="width: 300px;" />
+
                     
                 </q-card-section>
 
@@ -30,7 +29,7 @@
             <div class="btn-agregar" style="margin-bottom: 5%;">
                 <q-btn color="primary" label="Agregar" @click="agregarHorario()" />
             </div>
-            <q-table title="Horario" :rows="rows" :columns="columns" row-key="name">
+            <q-table title="Horario" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows" :columns="columns" row-key="name">
                 <template v-slot:body-cell-estado="props">
                     <q-td :props="props">
                         <label for="" v-if="props.row.estado == 1" style="color: green;">Activo</label>
@@ -63,8 +62,7 @@ let fixed = ref(false)
 let text = ref('')
 let hora_partida = ref('');
 let hora_llegada = ref();
-let fecha_partida = ref();
-let fecha_llegada = ref();
+
 let cambio = ref(0)
 
 async function obtenerInfo() {
@@ -84,8 +82,7 @@ onMounted(async () => {
 const columns = [
     { name: 'hora_partida', label: 'Hora_partida', field: 'hora_partida', sortable: true },
     { name: 'hora_llegada', label: 'Hora_llegada', field: 'hora_llegada', sortable: true },
-    { name: 'fecha_partida', label: 'Fecha_partida', field: 'fecha_partida', sortable: true },
-    { name: 'fecha_llegada', label: 'Fecha_llegada', field: 'fecha_llegada', sortable: true },
+,
     
     { name: 'estado', label: 'Estado', field: 'estado', sortable: true, format: (val) => (val ? 'Activo' : 'Inactivo') },
     {
@@ -111,8 +108,7 @@ async function agregarEditarHorario() {
         await HorarioStore.postHorario({
             hora_partida: hora_partida.value,
             hora_llegada: hora_llegada.value,
-            fecha_partida: fecha_partida.value,
-            fecha_llegada: fecha_llegada.value,
+
         });
         limpiar();
         obtenerInfo();
@@ -123,8 +119,7 @@ async function agregarEditarHorario() {
             await HorarioStore.putHorario(id, {
                 hora_partida: hora_partida.value,
                 hora_llegada: hora_llegada.value, 
-                fecha_partida: fecha_partida.value,
-                fecha_llegada: fecha_llegada.value,          
+        
             });
             limpiar();
             obtenerInfo();
@@ -136,8 +131,7 @@ async function agregarEditarHorario() {
 function limpiar() {
     hora_partida.value = "";
     hora_llegada.value = "";
-    fecha_partida.value = "";
-    fecha_llegada.value = "";
+
 }
 
 let idHorario = ref('');
@@ -150,8 +144,6 @@ async function EditarHorario(id) {
         text.value = "Editar Horario";
         hora_partida.value = HorSeleccionado.hora_partida;
         hora_llegada.value = HorSeleccionado.hora_llegada;
-        fecha_partida.value = HorSeleccionado.fecha_partida;
-        fecha_llegada.value = HorSeleccionado.fecha_llegada;
     }
 }
 
