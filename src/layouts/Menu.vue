@@ -72,18 +72,18 @@
 
           <q-item active clickable v-ripple>
             <q-item-section avatar>
-              <q-icon style="font-size: 2.5rem" name="confirmation_number" />
-            </q-item-section>
-
-            <q-item-section><router-link to="/Tiquetes">Tickets</router-link> </q-item-section>
-          </q-item>
-
-          <q-item active clickable v-ripple>
-            <q-item-section avatar>
               <q-icon style="font-size: 2.5rem" name="point_of_sale" />
             </q-item-section>
 
             <q-item-section><router-link to="/Vendedor"> Vendedores</router-link></q-item-section>
+          </q-item>
+
+          <q-item active clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon style="font-size: 2.5rem" name="confirmation_number" />
+            </q-item-section>
+
+            <q-item-section><router-link to="/Tiquetes">Tickets</router-link> </q-item-section>
           </q-item>
 
           <q-item active clickable v-ripple>
@@ -131,16 +131,14 @@ export default {
     const leftDrawerOpen = ref(false);
     const useAdmin = useAdminStore();
     const router = useRouter();
-    const usuarioAutenticado = ref(!!useAdmin.token);
 
     const cerrarSesion = () => {
-      useAdmin.logout(); // Llama a la función de logout desde tu almacén
-      router.push({ name: "Login" }); // Redirige al usuario a la página de inicio de sesión
+      useAdmin.logout();
+      router.push({ name: "login" });
     };
 
     return {
       leftDrawerOpen,
-      usuarioAutenticado,
       cerrarSesion,
       toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value;

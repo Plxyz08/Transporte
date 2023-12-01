@@ -1,6 +1,5 @@
-import Main from "../components/Main.vue";
 import Buses from "../components/Buses.vue";
-import Login from "../components/login.vue";
+const login = () => import('../components/login.vue');
 import Clientes from "../components/Clientes.vue";
 import Horarios from "../components/Horario.vue";
 import Menu from "../layouts/Menu.vue";
@@ -9,14 +8,12 @@ import Tiquetes from "../components/Tiquetes.vue";
 import Conductores from "../components/Conductores.vue";
 import Rutas from "../components/Rutas.vue";
 import Vendedor from "../components/Vendedor.vue";
-import Ventas from "../components/Ventas.vue"
+import Ventas from "../components/Ventas.vue";
 
-
-import { createRouter, createWebHashHistory } from "vue-router"
+import { createRouter, createWebHashHistory } from "vue-router";
 
 const routes = [
-    { path: "/", component: Login },
-    { path: "/Login", component: Login },
+    { path: "/", component: login, name: "login" }, 
     {
         path: "/Menu", component: Menu,
         children: [
@@ -31,9 +28,9 @@ const routes = [
             { path: "/Ventas", component: Ventas },
         ]
     },
-]
+];
 
 export const router = createRouter({
     history: createWebHashHistory(),
-    routes
-})
+    routes,
+});

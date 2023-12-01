@@ -10,16 +10,8 @@
         <q-separator />
 
         <q-card-section style="max-height: 50vh" class="scroll">
-          <q-input
-            v-model="cedula"
-            label="Cedula"
-            style="width: 300px"
-          />
-          <q-input
-            v-model="nombre"
-            label="Nombre"
-            style="width: 300px"
-          />
+          <q-input v-model="cedula" label="Cedula" style="width: 300px" />
+          <q-input v-model="nombre" label="Nombre" style="width: 300px" />
           <q-input v-model="experiencia" label="Experiencia" style="width: 300px" />
           <q-input v-model="telefono" label="Telefono" style="width: 300px" />
         </q-card-section>
@@ -37,9 +29,11 @@
       <div class="btn-agregar" style="margin-bottom: 5%">
         <q-btn color="primary" name="add" label="Agregar" @click="agregarConductor()" />
       </div>
-      <q-input v-model="searchPlaca" label="Buscar por Cedula" style="width: 300px; border-radius: 5
-            px; background-color: azure; position:relative; left: 80%;" />
-      <q-table title="Conductores" :rows="rows" :columns="columns" row-key="name">
+      <q-input v-model="buscarcedula" label="Buscar por Placa"
+        style=" width: 300px; border-radius: 10px; background-color: azure; margin: 0 auto;" class="centrado" />
+      <q-btn style="margin-top: 10px;" color="primary" label="Buscar" @click="filtrarconductores" class="btnbuscar" />
+      <q-table title="Conductores" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows"
+        :columns="columns" row-key="name">
         <template v-slot:body-cell-estado="props">
           <q-td :props="props">
             <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
@@ -48,23 +42,12 @@
         </template>
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="blue-4"
-              style="margin-right: 5px"
-              text-color="black"
-              @click="EditarConductor(props.row._id)"
-              ><q-icon name="edit"
-            /></q-btn>
-            <q-btn
-              color="green-4"
-              glossy
-              @click="InactivarConductor(props.row._id)"
-              v-if="props.row.estado == 1"
-              ><q-icon name="toggle_on"
-            /></q-btn>
-            <q-btn color="red-4" glossy @click="ActivarConductors(props.row._id)" v-else
-              ><q-icon name="toggle_off"
-            /></q-btn>
+            <q-btn color="blue-4" style="margin-right: 5px" text-color="black"
+              @click="EditarConductor(props.row._id)"><q-icon name="edit" /></q-btn>
+            <q-btn color="green-4" glossy @click="InactivarConductor(props.row._id)" v-if="props.row.estado == 1"><q-icon
+                name="toggle_on" /></q-btn>
+            <q-btn color="red-4" glossy @click="ActivarConductors(props.row._id)" v-else><q-icon
+                name="toggle_off" /></q-btn>
           </q-td>
         </template>
       </q-table>
@@ -87,6 +70,8 @@ let nombre = ref();
 let experiencia = ref("");
 let telefono = ref("");
 let cambio = ref(0);
+let buscarcedula = ref("");
+
 
 async function obtenerInfo() {
   try {
@@ -139,7 +124,7 @@ function agregarConductor() {
 
 async function agregarEditarConductor() {
   if (cambio.value === 0) {
-    await busStore.postConductor({
+    await conductorStore.postConductor({
       cedula: cedula.value,
       nombre: nombre.value,
       experiencia: experiencia.value,
@@ -197,4 +182,13 @@ async function ActivarConductors(id) {
   await conductorStore.putActivarConductor(id);
   obtenerInfo();
 }
+function filtrarconductores() {
+    if (buscarcedula.value.trim() === "") {
+        rows.value = conductores.value;
+    } else {
+        rows.value = conductores.value.filter((conductores) =>
+            conductores.cedula.toString().includes(buscarcedula.value.toString())
+        );
+    };
+};
 </script>

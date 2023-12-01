@@ -10,23 +10,11 @@
         <q-separator />
 
         <q-card-section style="max-height: 50vh" class="scroll">
-          <q-input
-            v-model="cedula"
-            label="cedula"
-            style="width: 300px"
-          />
-          <q-input
-            v-model="nombre"
-            label="nombre"
-            style="width: 300px"
-          />
-          <q-input 
-          v-model="telefono" 
-          label="telefono" 
-          style="width: 300px" 
-          />
+          <q-input v-model="cedula" label="cedula" style="width: 300px" />
+          <q-input v-model="nombre" label="nombre" style="width: 300px" />
+          <q-input v-model="telefono" label="telefono" style="width: 300px" />
         </q-card-section>
-    
+
 
         <q-separator />
 
@@ -41,9 +29,11 @@
       <div class="btn-agregar" style="margin-bottom: 5%">
         <q-btn color="primary" label="Agregar" @click="agregarCliente()" />
       </div>
-      <q-input v-model="searchPlaca" label="Buscar por Cedula" style="width: 300px; border-radius: 5
-            px; background-color: azure; position:relative; left: 80%;" />
-      <q-table title="Clientes" :rows="rows" :columns="columns" row-key="name">
+      <q-input v-model="buscarcedula" label="Buscar por Placa"
+        style=" width: 300px; border-radius: 10px; background-color: azure; margin: 0 auto;" class="centrado" />
+      <q-btn style="margin-top: 10px;" color="primary" label="Buscar" @click="filtrarclientes" class="btnbuscar" />
+      <q-table title="Clientes" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows" :columns="columns"
+        row-key="name">
         <template v-slot:body-cell-estado="props">
           <q-td :props="props">
             <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
@@ -52,23 +42,11 @@
         </template>
         <template v-slot:body-cell-opciones="props">
           <q-td :props="props" class="botones">
-            <q-btn
-              color="blue-4"
-              style="margin-right: 5px"
-              text-color="black"
-              @click="EditarCliente(props.row._id)"
-              ><q-icon name="edit"
-            /></q-btn>
-            <q-btn
-              color="green-4"
-              glossy
-              @click="InactivarCliente(props.row._id)"
-              v-if="props.row.estado == 1"
-              ><q-icon name="toggle_on"
-            /></q-btn>
-            <q-btn color="red-4" glossy @click="ActivarCliente(props.row._id)" v-else
-              ><q-icon name="toggle_off"
-            /></q-btn>
+            <q-btn color="blue-4" style="margin-right: 5px" text-color="black"
+              @click="EditarCliente(props.row._id)"><q-icon name="edit" /></q-btn>
+            <q-btn color="green-4" glossy @click="InactivarCliente(props.row._id)" v-if="props.row.estado == 1"><q-icon
+                name="toggle_on" /></q-btn>
+            <q-btn color="red-4" glossy @click="ActivarCliente(props.row._id)" v-else><q-icon name="toggle_off" /></q-btn>
           </q-td>
         </template>
       </q-table>
@@ -91,6 +69,8 @@ let cedula = ref("");
 let nombre = ref();
 let telefono = ref("");
 let cambio = ref(0);
+let buscarcedula = ref("");
+
 
 async function obtenerInfo() {
   try {
@@ -172,16 +152,16 @@ function limpiar() {
 
 let idCliente = ref("");
 async function EditarCliente(id) {
-    cambio.value = 1;
-    const clienteSeleccionado = clientes.value.find((cliente) => cliente._id === id);
-    if (clienteSeleccionado) {
-        idCliente.value = String(clienteSeleccionado._id);
-        fixed.value = true;
-        text.value = "Editar Cliente";
-        cedula.value = clienteSeleccionado.cedula;
-        nombre.value = clienteSeleccionado.nombre;
-        telefono.value = clienteSeleccionado.telefono;
-    }
+  cambio.value = 1;
+  const clienteSeleccionado = clientes.value.find((cliente) => cliente._id === id);
+  if (clienteSeleccionado) {
+    idCliente.value = String(clienteSeleccionado._id);
+    fixed.value = true;
+    text.value = "Editar Cliente";
+    cedula.value = clienteSeleccionado.cedula;
+    nombre.value = clienteSeleccionado.nombre;
+    telefono.value = clienteSeleccionado.telefono;
+  }
 }
 
 async function InactivarCliente(id) {
@@ -193,6 +173,15 @@ async function ActivarCliente(id) {
   await ClienteStore.putClienteActivar(id);
   obtenerInfo();
 }
+function filtrarclientes() {
+    if (buscarcedula.value.trim() === "") {
+        rows.value = clientes.value;
+    } else {
+        rows.value = clientes.value.filter((clientes) =>
+            clientes.cedula.toString().includes(buscarcedula.value.toString())
+        );
+    };
+};
 </script>
 
 <style scoped>

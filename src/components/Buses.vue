@@ -15,6 +15,8 @@
 
                     <q-input v-model="cantidad_asientos" label="Cantidad de Asientos" style="width: 300px;" />
                     <q-input v-model="empresa_asignada" label="Empresa Asignada" style="width: 300px;" />
+                    <q-select v-model="conductorSeleccionado" :options="conductores" label="Conductor" />
+
                 </q-card-section>
 
                 <q-separator />
@@ -30,10 +32,12 @@
             <div class="btn-agregar" style="margin-bottom: 5%;">
                 <q-btn color="primary" label="Agregar" @click="agregarBus()" />
             </div>
-            <q-input v-model="searchPlaca" label="Buscar por Placa" style="width: 300px; border-radius: 5
-            px; background-color: azure; position:relative; left: 80%;" />
+            <q-input v-model="buscarplaca" label="Buscar por Placa"
+                style=" width: 300px; border-radius: 10px; background-color: azure; margin: 0 auto;" class="centrado" />
+            <q-btn style="margin-top: 10px;" color="primary" label="Buscar" @click="filtrarbuses" class="btnbuscar" />
 
-            <q-table style="width: 1300px; margin-top: 10px" title="Buses" :rows="rows" :columns="columns" row-key="name">
+            <q-table style="width: 1500px; margin-top: 10px; margin-left:-10%;" title="Buses" :rows="rows"
+                :columns="columns" row-key="name">
                 <template v-slot:body-cell-estado="props">
                     <q-td :props="props">
                         <label for="" v-if="props.row.estado == 1" style="color: green;">Activo</label>
@@ -60,7 +64,10 @@ import axios from 'axios';
 import { ref, onMounted } from 'vue';
 import { format } from 'date-fns';
 import { useBusStore } from '../stores/buses.js';
+import { useConductorStore } from '../stores/conductores.js';
+
 const busStore = useBusStore()
+const conductorStore = useConductorStore();
 
 let buses = ref([]);
 let rows = ref([]);
@@ -71,6 +78,9 @@ let numero_bus = ref();
 let cantidad_asientos = ref('');
 let empresa_asignada = ref('');
 let cambio = ref(0)
+let conductorSeleccionado = ref("");
+let conductores = ref([]);
+let buscarplaca = ref("");
 
 async function obtenerInfo() {
     try {
@@ -81,9 +91,23 @@ async function obtenerInfo() {
         console.log(error);
     }
 }
+async function obtenerConductores() {
+    try {
+        await conductorStore.getConductor();
+        conductores.value = conductorStore.conductores.map(conductor => ({
+            label: `${conductor.nombre} - ${conductor.telefono}`,
+            value: conductor._id,
+        }));
+
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 onMounted(async () => {
     obtenerInfo()
+    await obtenerConductores();
+
 });
 
 const columns = [
@@ -93,13 +117,33 @@ const columns = [
     { name: 'empresa_asignada', label: 'Empresa Asignada', field: 'empresa_asignada' },
     { name: 'estado', label: 'Estado', field: 'estado', sortable: true, format: (val) => (val ? 'Activo' : 'Inactivo') },
     {
-        name: 'createAT', label: 'Fecha de Creación', field: 'createAT', sortable: true,
-        format: (val) => format(new Date(val), 'yyyy-MM-dd')
+        name: "nombre",
+        label: "Nombre Conductor",
+        field: (row) => row.conductor_id.nombre,
     },
     {
-        name: 'opciones', label: 'Opciones',
-        field: row => null,
-        "sortable": false,
+        name: "cedula",
+        label: "Cedula Conductor",
+        field: (row) => row.conductor_id.cedula,
+    },
+    {
+        name: "telefono",
+        label: "Telefono Conductor",
+        field: (row) => row.conductor_id.telefono,
+    },
+    { name: "estado", label: "Estado", field: "estado", sortable: true },
+    {
+        name: "createAT",
+        label: "Fecha de Creación",
+        field: "createAT",
+        sortable: true,
+        format: (val) => format(new Date(val), "yyyy-MM-dd"),
+    },
+    {
+        name: "opciones",
+        label: "Opciones",
+        field: (row) => null,
+        sortable: false,
     },
 ];
 
@@ -117,6 +161,7 @@ async function agregarEditarBus() {
             numero_bus: numero_bus.value,
             cantidad_asientos: cantidad_asientos.value,
             empresa_asignada: empresa_asignada.value,
+            conductor_id: conductorSeleccionado._rawValue.value
         });
         limpiar();
         obtenerInfo();
@@ -129,6 +174,7 @@ async function agregarEditarBus() {
                 numero_bus: numero_bus.value,
                 cantidad_asientos: cantidad_asientos.value,
                 empresa_asignada: empresa_asignada.value,
+                conductor_id: conductorSeleccionado._rawValue.value
             });
             limpiar();
             obtenerInfo();
@@ -136,6 +182,7 @@ async function agregarEditarBus() {
         }
     }
 }
+
 
 function limpiar() {
     placa.value = "";
@@ -168,10 +215,24 @@ async function ActivarBus(id) {
     await busStore.putActivarBus(id);
     obtenerInfo();
 }
+function filtrarbuses() {
+    if (buscarplaca.value.trim() === "") {
+        rows.value = buses.value;
+    } else {
+        rows.value = buses.value.filter((buses) =>
+            buses.placa.toString().includes(buscarplaca.value.toString())
+        );
+    };
+};
 </script>
 
 
 <style scoped>
+.centrado {
+  display: block;
+  margin: 0 auto;
+}
+
 .q-table-container .q-td.opciones {
     text-align: center;
 }
