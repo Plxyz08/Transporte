@@ -26,13 +26,25 @@
     </q-dialog>
     <div>
       <h3>Clientes</h3>
-      <div class="btn-agregar" style="margin-bottom: 5%">
-        <q-btn color="primary" label="Agregar" @click="agregarCliente()" />
-      </div>
-      <q-input v-model="buscarcedula" label="Buscar por Placa"
-        style=" width: 300px; border-radius: 10px; background-color: azure; margin: 0 auto;" class="centrado" />
-      <q-btn style="margin-top: 10px;" color="primary" label="Buscar" @click="filtrarclientes" class="btnbuscar" />
-      <q-table title="Clientes" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows" :columns="columns"
+      <q-row>
+        <!-- Single column for both "Agregar Cliente" and "Buscar por cedula" -->
+        <q-col class="col-container" :span="12">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <!-- "Agregar Cliente" button -->
+            <div class="btn-agregar">
+              <q-btn color="primary" label="Agregar" @click="agregarCliente()" />
+            </div>
+
+            <!-- "Buscar por cedula" input and "Buscar" button -->
+            <div style="display: flex; align-items: center;">
+              <q-input v-model="buscarcedula" label="Buscar por cedula"
+                style="width: 300px; border-radius: 10px; background-color: azure; margin-right: 10px;" />
+              <q-btn color="primary" label="Buscar" @click="filtrarclientes" class="btnbuscar" />
+            </div>
+          </div>
+        </q-col>
+      </q-row>
+      <q-table title="Clientes" style="width: 1400px; margin-top: 10px; margin-left:-10%;" :rows="rows" :columns="columns"
         row-key="name">
         <template v-slot:body-cell-estado="props">
           <q-td :props="props">
@@ -174,13 +186,13 @@ async function ActivarCliente(id) {
   obtenerInfo();
 }
 function filtrarclientes() {
-    if (buscarcedula.value.trim() === "") {
-        rows.value = clientes.value;
-    } else {
-        rows.value = clientes.value.filter((clientes) =>
-            clientes.cedula.toString().includes(buscarcedula.value.toString())
-        );
-    };
+  if (buscarcedula.value.trim() === "") {
+    rows.value = clientes.value;
+  } else {
+    rows.value = clientes.value.filter((clientes) =>
+      clientes.cedula.toString().includes(buscarcedula.value.toString())
+    );
+  };
 };
 </script>
 

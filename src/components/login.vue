@@ -1,6 +1,6 @@
 <script>
 import { ref } from 'vue';
-import { useAdminStore } from "../stores/login.js"
+import { useAdminStore } from "../stores/login"
 import { useRouter } from "vue-router"
 import { useQuasar } from 'quasar'
 
@@ -57,7 +57,7 @@ export default {
         <div class="text-caption text-grey">
           <input type="text" v-model="cuenta" name="cajaTexto" placeholder="Cuenta"
             style="padding-left: 30px; border-radius: 5px; background-color: rgb(212, 248, 255); color: black; width: 90%; height: 30px; border: 1px solid #000000; margin-bottom: 20px;">
-          <input type="text" v-model="clave" id="clave" name="cajaTexto" placeholder="Contraseña"
+          <input type="password" v-model="clave" id="clave" name="cajaTexto" placeholder="Contraseña"
             style="padding-left: 30px; border-radius: 5px; background-color: rgb(212, 248, 255); color: black; width: 90%; height: 30px; border: 1px solid #000000; margin-bottom: 20px;">
           <!-- <q-btn no-caps push color="primary"  @click="iniciar()" >
             <span v-if="useAdmin.loading">Iniciar</span>
@@ -70,7 +70,7 @@ export default {
             </template>
           </q-btn>  -->
           <q-btn :loading="useAdmin.loading" color="blue" @click="iniciar()">
-            Button
+            Ingresar
             <template v-slot:loading>
               <q-spinner-radio />
             </template>

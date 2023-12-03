@@ -26,12 +26,24 @@
     </q-dialog>
     <div>
       <h3>Conductores</h3>
-      <div class="btn-agregar" style="margin-bottom: 5%">
-        <q-btn color="primary" name="add" label="Agregar" @click="agregarConductor()" />
-      </div>
-      <q-input v-model="buscarcedula" label="Buscar por Placa"
-        style=" width: 300px; border-radius: 10px; background-color: azure; margin: 0 auto;" class="centrado" />
-      <q-btn style="margin-top: 10px;" color="primary" label="Buscar" @click="filtrarconductores" class="btnbuscar" />
+      <q-row>
+        <!-- Single column for both "Agregar Conductor" and "Buscar por Cedula" -->
+        <q-col class="col-container" :span="12">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <!-- "Agregar Conductor" button -->
+            <div class="btn-agregar">
+              <q-btn color="primary" name="add" label="Agregar" @click="agregarConductor()" />
+            </div>
+
+            <!-- "Buscar por Cedula" input and "Buscar" button -->
+            <div style="display: flex; align-items: center;">
+              <q-input v-model="buscarcedula" label="Buscar por Cedula"
+                style="width: 300px; border-radius: 10px; background-color: azure; margin-right: 10px;" />
+              <q-btn color="primary" label="Buscar" @click="filtrarconductores" class="btnbuscar" />
+            </div>
+          </div>
+        </q-col>
+      </q-row>
       <q-table title="Conductores" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows"
         :columns="columns" row-key="name">
         <template v-slot:body-cell-estado="props">
@@ -183,12 +195,12 @@ async function ActivarConductors(id) {
   obtenerInfo();
 }
 function filtrarconductores() {
-    if (buscarcedula.value.trim() === "") {
-        rows.value = conductores.value;
-    } else {
-        rows.value = conductores.value.filter((conductores) =>
-            conductores.cedula.toString().includes(buscarcedula.value.toString())
-        );
-    };
+  if (buscarcedula.value.trim() === "") {
+    rows.value = conductores.value;
+  } else {
+    rows.value = conductores.value.filter((conductores) =>
+      conductores.cedula.toString().includes(buscarcedula.value.toString())
+    );
+  };
 };
 </script>

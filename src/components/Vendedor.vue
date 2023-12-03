@@ -28,12 +28,24 @@
     </q-dialog>
     <div>
       <h3>Vendedores</h3>
-      <div class="btn-agregar" style="margin-bottom: 5%">
-        <q-btn color="primary" label="Agregar" @click="agregarVendedor()" />
-      </div>
-      <q-input v-model="buscarCedula" label="Buscar por Cedula"
-        style="width: 300px; border-radius: 10px; background-color: azure; margin: 0 auto;" class="centrado" />
-      <q-btn style="margin-top: 10px;" color="primary" label="Buscar" @click="filtrarVendedores" class="btnbuscar" />
+      <q-row>
+        <!-- Single column for both "Agregar Vendedor" and "Buscar por Cedula" -->
+        <q-col class="col-container" :span="12">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <!-- "Agregar Vendedor" button -->
+            <div class="btn-agregar">
+              <q-btn color="primary" label="Agregar" @click="agregarVendedor()" />
+            </div>
+
+            <!-- "Buscar por Cedula" input and "Buscar" button -->
+            <div style="display: flex; align-items: center;">
+              <q-input v-model="buscarCedula" label="Buscar por Cedula"
+                style="width: 300px; border-radius: 10px; background-color: azure; margin-right: 10px;" />
+              <q-btn color="primary" label="Buscar" @click="filtrarVendedores" class="btnbuscar" />
+            </div>
+          </div>
+        </q-col>
+      </q-row>
       <q-table title="Vendedores" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows"
         :columns="columns" row-key="name">
         <template v-slot:body-cell-estado="props">

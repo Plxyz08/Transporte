@@ -1,7 +1,7 @@
 <template>
   <div>
     <h3>Ventas de Boletos</h3>
-    <q-table title="Ventas de Boletos" style="width: 1500px; margin-top: 10px; margin-left: -10%;" :rows="rows"
+    <q-table title="Ventas de Boletos"  :rows="rows"
       :columns="columns" row-key="name">
       <template v-slot:body-cell-estado="props">
         <q-td :props="props">
@@ -16,7 +16,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useVentasStore } from '../stores/ventas'; // Ajusta la ruta según tu estructura de archivos
+import { useVentasStore } from '../stores/ventas';
 import { format } from 'date-fns';
 
 const ventasStore = useVentasStore();

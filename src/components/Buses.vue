@@ -29,12 +29,24 @@
         </q-dialog>
         <div>
             <h3>Buses</h3>
-            <div class="btn-agregar" style="margin-bottom: 5%;">
-                <q-btn color="primary" label="Agregar" @click="agregarBus()" />
-            </div>
-            <q-input v-model="buscarplaca" label="Buscar por Placa"
-                style=" width: 300px; border-radius: 10px; background-color: azure; margin: 0 auto;" class="centrado" />
-            <q-btn style="margin-top: 10px;" color="primary" label="Buscar" @click="filtrarbuses" class="btnbuscar" />
+            <q-row>
+                <!-- Single column for both "Agregar Bus" and "Buscar por Placa" -->
+                <q-col class="col-container" :span="12">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <!-- "Agregar Bus" button -->
+                        <div class="btn-agregar">
+                            <q-btn color="primary" label="Agregar" @click="agregarBus()" />
+                        </div>
+
+                        <!-- "Buscar por Placa" input and "Buscar" button -->
+                        <div style="display: flex; align-items: center;">
+                            <q-input v-model="buscarplaca" label="Buscar por Placa"
+                                style="width: 300px; border-radius: 10px; background-color: azure; margin-right: 10px;" />
+                            <q-btn color="primary" label="Buscar" @click="filtrarbuses" class="btnbuscar" />
+                        </div>
+                    </div>
+                </q-col>
+            </q-row>
 
             <q-table style="width: 1500px; margin-top: 10px; margin-left:-10%;" title="Buses" :rows="rows"
                 :columns="columns" row-key="name">
@@ -229,8 +241,8 @@ function filtrarbuses() {
 
 <style scoped>
 .centrado {
-  display: block;
-  margin: 0 auto;
+    display: block;
+    margin: 0 auto;
 }
 
 .q-table-container .q-td.opciones {
