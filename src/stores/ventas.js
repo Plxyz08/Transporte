@@ -62,8 +62,9 @@ export const useVentasStore = defineStore('ticket', () => {
     }
   };
 
+
   // Función asincrónica para inactivar un ticket por ID
-  const putTicketInactivar = async (id) => {
+  const InactivarTicket = async (id) => {
     try {
       // Realiza una solicitud PUT a `/ticket/inactivarTicket/${id}`
       let res = await axios.put(`/ticket/inactivarTicket/${id}`);
@@ -75,11 +76,10 @@ export const useVentasStore = defineStore('ticket', () => {
     }
   };
 
-  // Función asincrónica para activar un ticket por ID
-  const putTicketActivar = async (id) => {
+  const ActivarTicket = async (id) => {
     try {
-      // Realiza una solicitud PUT a `ticket/activarTicket/${id}`
-      let res = await axios.put(`ticket/activarTicket/${id}`);
+      // Realiza una solicitud PUT a `/ticket/activarTicket/${id}`
+      let res = await axios.put(`/ticket/activarTicket/${id}`);
       return res;
     } catch (error) {
       // Manejo de errores al activar un ticket
@@ -122,8 +122,8 @@ export const useVentasStore = defineStore('ticket', () => {
     getTicket,
     postTicket,
     putEditarTicket,
-    putTicketInactivar,
-    putTicketActivar,
+    InactivarTicket,
+    ActivarTicket,
     buscarTickets,
     getRutasPorBus,
   };

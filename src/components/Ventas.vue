@@ -19,7 +19,7 @@
                 </div>
             </q-col>
         </q-row>
-        
+
     </div>
     <div class="q-pa-md">
         <q-table title="Tickets" :rows="tickets.ticket" :columns="columns" row-key="name">
@@ -34,12 +34,13 @@
                 <q-td :props="props" class="botones">
                     <q-btn color="blue-4" style="margin-right: 5px" text-color="black"
                         @click="EditarTicket(props.row._id)"><q-icon name="edit" /></q-btn>
-                    <q-btn color="blue-4" style="margin-right: 5px" text-color="black" @click="PDF(props.row._id)"><q-icon
-                            name="print" /></q-btn>
+                    <q-btn color="amber" style="margin-right: 5px" text-color="black"
+                        @click="imprimirPDF(props.row._id)"><q-icon name="print" /></q-btn>
                     <q-btn color="green-4" glossy @click="InactivarTicket(props.row._id)"
                         v-if="props.row.estado == 1"><q-icon name="toggle_on" /></q-btn>
-                    <q-btn color="red-4" glossy @click="ActivarTick(props.row._id)" v-else><q-icon
-                            name="toggle_off" /></q-btn>
+                    <q-btn color="red-4" glossy @click="ActivarTicket(props.row._id)" v-else>
+                        <q-icon name="toggle_off" />
+                    </q-btn>
                 </q-td>
             </template>
         </q-table>
@@ -47,8 +48,9 @@
 </template>
   
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { format } from 'date-fns';
+import html2pdf from 'html2pdf.js';
 import { useVentasStore } from '../stores/ventas';
 
 const columns = [
@@ -69,23 +71,80 @@ export default {
         const ventasStore = useVentasStore();
         const tickets = ref([]);
 
-        // Llama a la función getTicket de tu tienda al cargar el componente
-        onMounted(async () => {
+        const obtenerInfo = async () => {
             await ventasStore.getTicket();
-            // Asigna los datos de la tienda a la referencia local
             tickets.value = ventasStore.tickets;
+        };
+
+        const ActivarTicket = async (id) => {
+            await ventasStore.ActivarTicket(id);
+            obtenerInfo();
+        };
+
+        const InactivarTicket = async (id) => {
+            await ventasStore.InactivarTicket(id);
+            obtenerInfo();
+        };
+
+        const imprimirPDF = async (id) => {
+            const ticketSeleccionado = tickets.value.ticket.find((ticket) => ticket._id === id);
+
+            if (ticketSeleccionado) {
+                const container = document.createElement('div');
+                const content = document.createElement('div');
+
+                await nextTick();
+
+                // Estilo para el contenedor principal
+                container.style.maxWidth = '600px';
+                container.style.margin = 'auto';
+                container.style.padding = '20px';
+                container.style.border = '1px solid #ccc';
+                container.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
+
+                // Estilo para el contenido
+                content.style.fontFamily = 'Arial, sans-serif';
+                content.style.fontSize = '16px';
+                content.style.lineHeight = '1.6';
+
+                // Añade detalles específicos del ticket al contenido
+                content.innerHTML = `
+      <h2 style="text-align: center;">Detalles del Ticket</h2>
+      <p><strong>Cliente:</strong> ${ticketSeleccionado.cliente_id.nombre}</p>
+      <p><strong>Info Bus:</strong> ${ticketSeleccionado.bus_id.empresa_asignada} - ${ticketSeleccionado.bus_id.placa} - N°${ticketSeleccionado.bus_id.numero_bus}</p>
+      <p><strong>Ruta:</strong> ${ticketSeleccionado.ruta_id.origen} - ${ticketSeleccionado.ruta_id.destino}</p>
+      <p><strong>Horario:</strong> ${ticketSeleccionado.ruta_id.horario_id.hora_partida} - ${ticketSeleccionado.ruta_id.horario_id.hora_llegada}</p>
+      <p><strong>N° Asiento:</strong> ${ticketSeleccionado.no_asiento}</p>
+      <p><strong>Fecha de partida:</strong> ${format(new Date(ticketSeleccionado.fecha_departida), "yyyy-MM-dd")}</p>
+      <p><strong>Estado:</strong> ${ticketSeleccionado.estado === 1 ? 'Activo' : 'Inactivo'}</p>
+      <p><strong>Fecha de Creación:</strong> ${format(new Date(ticketSeleccionado.createAT), "yyyy-MM-dd")}</p>
+    `;
+
+                container.appendChild(content);
+
+                document.body.appendChild(container);
+                html2pdf(container);
+                document.body.removeChild(container);
+            }
+        };
+
+        onMounted(() => {
+            obtenerInfo();
         });
 
         return {
             columns,
             tickets,
+            ActivarTicket,
+            InactivarTicket,
+            imprimirPDF
         };
     },
 };
 </script>
 
 <style scoped>
-h3{
+h3 {
     margin: 2px;
 }
 </style>
