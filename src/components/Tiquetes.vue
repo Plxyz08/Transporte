@@ -1,5 +1,6 @@
 <template>
     <div class="contenedor-principal">
+
         <!-- Contenedor de asientos -->
         <div v-if="mostrarAsientos" class="asientos-container">
             <h4>Seleccione asientos</h4>
@@ -17,6 +18,7 @@
                 </q-btn>
             </div>
         </div>
+
 
         <div v-else>
             <q-btn @click="abrirModal" icon="add" color="primary" v-if="asientoSeleccionado === null">
@@ -47,19 +49,41 @@
         <!-- Formulario para el asiento seleccionado -->
         <div v-if="asientoSeleccionado || mostrarModal" class="formulario">
             <h4 v-if="asientoSeleccionado">Asiento #{{ asientoSeleccionado.numero }}</h4>
+            <q-icon v-if="clienteEncontrado === true" name="check" color="green" size="24px" />
+            <q-icon v-else-if="clienteEncontrado === false" name="clear" color="red" size="24px" />
             <q-btn v-if="asientoSeleccionado" type="submit" color="primary" label="Buscar cliente" @click="filtrarclientes"
                 class="q-ma-md"></q-btn>
-            <q-btn v-if="asientoSeleccionado" type="submit" color="primary" label="Agregar cliente"
-                @click="mostrarDialogoAgregarEditarCliente" class="q-ma-md"></q-btn>
+            <q-btn v-if="asientoSeleccionado" type="submit" color="primary" label="Agregar cliente" @click="agregarCliente"
+                class="q-ma-md"></q-btn>
             <form v-if="asientoSeleccionado" @submit.prevent="comprarBoleto">
                 <q-input type="text" id="cedula" v-model="buscarCedula" outlined label="Cédula" required
                     class="ml"></q-input>
-                <q-input type="tel" id="telefono" v-model="telefono" outlined label="Teléfono" required
+                <q-input type="number" id="telefono" v-model="telefono" outlined label="Teléfono" required
                     class="ml"></q-input>
                 <q-input type="text" id="nombre" v-model="nombre" outlined label="Nombre" required class="ml"></q-input>
-                <q-btn type="submit" color="primary" label="Confirmar compra" class="q-ma-md"></q-btn>
+                <q-btn type="submit" color="primary" label="Confirmar compra" class="q-ma-md" @click="confirmarCompra"></q-btn>
             </form>
         </div>
+
+        <!-- Modal para agregar cliente -->
+        <q-dialog v-model="mostrarModalCliente" class="cliente-dialog">
+            <q-card class="modal-content">
+                <q-card-section class="q-pa-md">
+                    <h4>Agregar Cliente</h4>
+                    <q-input v-model="newCedula" label="Cédula" outlined :rules="cedulaRules" />
+                    <q-input v-model="newNombre" label="Nombre" outlined :rules="nombreRules" />
+                    <q-input v-model="newTelefono" label="Teléfono" outlined :rules="telefonoRules" />
+                    <q-spinner v-if="loadingCliente" color="primary" size="40px" />
+                </q-card-section>
+                <q-card-actions align="right">
+                    <q-btn flat label="Cancelar" color="negative" @click="cerrarModalCliente" />
+                    <q-btn flat label="Guardar" color="primary" @click="guardarCliente"
+                        :disable="!formularioClienteValido"/>
+                </q-card-actions>
+
+            </q-card>
+        </q-dialog>
+
     </div>
 </template>
   
@@ -70,9 +94,16 @@ import { ref, onMounted } from 'vue';
 import { useBusStore } from '../stores/buses';
 import { useRutasStore } from '../stores/rutas';
 import { useClienteStore } from '../stores/clientes';
+import { useVentasStore } from '../stores/ventas';
+import { useAdminStore } from '../stores/login';
+import { useQuasar } from 'quasar';
 
+const $q = useQuasar();
+const mostrarModalCliente = ref(false);
 const clienteStore = useClienteStore();
 const busStore = useBusStore();
+const ventasStore = useVentasStore();
+const adminStore = useAdminStore();
 const rutasStore = useRutasStore();
 const mostrarModal = ref(false);
 let buscarCedula = ref('');
@@ -80,11 +111,20 @@ let clienteEncontrado = ref(null);
 let buses = ref([]);
 let rutas = ref([]);
 let ruta = ref('');
+let newCedula = ref();
+let newTelefono = ref();
+let newNombre = ref("");
+let telefono = ref();
+let nombre = ref("");
 let busSeleccionado = ref('');
 let fechaSalida = ref('');
 const mostrarAsientos = ref(false);
 let asientos = ref([]);
 let asientosSeleccionados = ref([]);
+
+const cerrarModalCliente = () => {
+    mostrarModalCliente.value = false;
+};
 
 const cargarDatos = async () => {
     try {
@@ -122,7 +162,7 @@ const cargarDatos = async () => {
 
     try {
         await clienteStore.getCliente();
-        console.log('Clientes:', clienteStore.clientes);
+        /* console.log('Clientes:', clienteStore.clientes); */
     } catch (error) {
 
     }
@@ -130,27 +170,52 @@ const cargarDatos = async () => {
 
 const filtrarclientes = async () => {
     try {
-        // Assuming that `buscarCedula.value` contains the entered Cedula
         const cedulaBuscada = buscarCedula.value;
         console.log('Cedula buscada:', cedulaBuscada);
 
-        // Log the cedulas of clients for troubleshooting
         console.log('Cedulas de clientes:', clienteStore.clientes.map(cliente => cliente.cedula));
 
-        // Find the client with the matching Cedula
         const clienteEncontrado = clienteStore.clientes.find(cliente => cliente.cedula === Number(cedulaBuscada));
 
         if (clienteEncontrado) {
-            // Log the information of the found client
-            console.log('Cliente encontrado:', clienteEncontrado);
+            buscarCedula.value = clienteEncontrado.cedula;
+            telefono.value = clienteEncontrado.telefono;
+            nombre.value = clienteEncontrado.nombre;
+
+            clienteEncontrado.value = true;
+            greatMessage.value = "Cliente encontrado";
+            showGreat();
+            /* console.log('Cliente encontrado:', clienteEncontrado); */
         } else {
+            clienteEncontrado.value = false;
+            badMessage.value = "No existe registro";
+            showBad();
             console.log('Cliente no encontrado');
         }
 
-        // Rest of your code...
-        // ...
     } catch (error) {
         console.error('Error al buscar el cliente:', error);
+    }
+};
+
+const agregarCliente = () => {
+    mostrarModalCliente.value = true;
+};
+
+const guardarCliente = async () => {
+    loadingCliente.value = true;
+
+    try {
+        await clienteStore.postCliente({
+            cedula: newCedula.value,
+            nombre: newNombre.value,
+            telefono: newTelefono.value,
+        });
+
+    } catch (error) {
+        console.error('Error saving client:', error);
+    } finally {
+        loadingCliente.value = false;
     }
 };
 
@@ -169,12 +234,15 @@ const validarFecha = (dateString) => {
     );
 };
 
-const guardarVentaYMostrarAsientos = () => {
-    cargarAsientos(busSeleccionado.value.cantidad_asientos);
-    console.log('Cantidad de asientos del bus seleccionado:', busSeleccionado.value.cantidad_asientos);
-
-    mostrarAsientos.value = true;
-    mostrarModal.value = false;
+const guardarVentaYMostrarAsientos = async () => {
+    try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        cargarAsientos(busSeleccionado.value.cantidad_asientos);
+        mostrarAsientos.value = true;
+        mostrarModal.value = false;
+    } catch (error) {
+        console.error('Error:', error);
+    }
 };
 
 const cargarAsientos = (cantidadAsientos) => {
@@ -190,6 +258,44 @@ const seleccionarAsiento = (asiento) => {
     };
     /* mostrarAsientos.value = false; */
 };
+
+const confirmarCompra = async () => {
+    try {
+        await ventasStore.postTicket({
+            
+        })
+    } catch (error) {
+        
+    }
+};
+
+let greatMessage = ref("");
+let badMessage = ref("");
+let notification = ref(null);
+
+const showGreat = () => {
+    notification = $q.notify({
+        spinner: false,
+        message: greatMessage,
+        timeout: 2000,
+        type: "positive",
+    });
+};
+
+const showBad = () => {
+    notification = $q.notify({
+        spinner: false,
+        message: badMessage,
+        timeout: 2000,
+        type: "negative",
+    });
+};
+
+const cancelShow = () => {
+    if (notification) {
+        notification();
+    }
+}
 
 const formularioValido = ref(false);
 
