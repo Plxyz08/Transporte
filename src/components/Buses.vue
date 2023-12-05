@@ -166,6 +166,9 @@ async function agregarEditarBus() {
         limpiar();
         obtenerInfo();
         fixed.value = false;
+        rows.value = [...buses.value].sort((a, b) => {
+            return new Date(b.createAT) - new Date(a.createAT);
+        });
     } else {
         let id = idBus.value;
         if (id) {
