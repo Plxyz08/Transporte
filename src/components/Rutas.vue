@@ -30,26 +30,29 @@
       <div class="btn-agregar" style="margin-bottom: 5%">
         <q-btn color="primary" label="Agregar" @click="agregarRuta()" />
       </div>
-      <q-table title="Rutas" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows" :columns="columns"
-        row-key="name">
-        <template v-slot:body-cell-estado="props">
-          <q-td :props="props">
-            <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
-            <label for="" v-else style="color: red">Inactivo</label>
-          </q-td>
-        </template>
-        <template v-slot:body-cell-opciones="props">
-          <q-td :props="props" class="botones">
-            <q-btn color="blue-4" style="margin-right: 5px" text-color="black" @click="EditarRuta(props.row._id)">
-              <q-icon name="edit"> </q-icon>
-            </q-btn>
-            <q-btn color="green-4" glossy @click="InactivarRuta(props.row._id)" v-if="props.row.estado == 1"><q-icon
-                name="toggle_on" /></q-btn>
-            <q-btn color="red-4" glossy @click="ActivarRuta(props.row._id)" v-else>
-              <q-icon name="toggle_off"> </q-icon></q-btn>
-          </q-td>
-        </template>
-      </q-table>
+
+      <div class="q-pa-md">
+        <q-table title="Rutas" :rows="rows" :columns="columns"
+          row-key="name">
+          <template v-slot:body-cell-estado="props">
+            <q-td :props="props">
+              <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
+              <label for="" v-else style="color: red">Inactivo</label>
+            </q-td>
+          </template>
+          <template v-slot:body-cell-opciones="props">
+            <q-td :props="props" class="botones">
+              <q-btn color="blue-4" style="margin-right: 5px" text-color="black" @click="EditarRuta(props.row._id)">
+                <q-icon name="edit"> </q-icon>
+              </q-btn>
+              <q-btn color="green-4" glossy @click="InactivarRuta(props.row._id)" v-if="props.row.estado == 1"><q-icon
+                  name="toggle_on" /></q-btn>
+              <q-btn color="red-4" glossy @click="ActivarRuta(props.row._id)" v-else>
+                <q-icon name="toggle_off"> </q-icon></q-btn>
+            </q-td>
+          </template>
+        </q-table>
+      </div>
     </div>
   </div>
 </template>
@@ -202,6 +205,10 @@ async function ActivarRuta(id) {
 <style scoped>
 .q-table-container .q-td.opciones {
   text-align: center;
+}
+
+h3{
+  margin: 5px;
 }
 
 .q-btn.opcion-btn {

@@ -1,397 +1,243 @@
 <template>
-    <div class="q-gutter-md">
-        <div class="bus-layout">
-            <div class="asientos" v-if="mostrarContenido">
-                <h4>Seleccione la silla</h4>
-                <div class="fila" v-for="(fila, filaIndex) in filas" :key="filaIndex">
-                    <div class="asiento" v-for="(asiento, asientoIndex) in fila" :key="asiento.numero">
-                        <button @click="seleccionarAsiento(asiento)" :class="{
-                            'asiento-button': true,
-                            selected: asientoSeleccionado === asiento,
-                            reserved: asiento.reservado,
-                        }">
-                            <q-icon :name="asiento.reservado ? 'check' : 'event_seat'" class="asiento-icon"></q-icon>
-                            {{ asiento.numero }}
-                        </button>
-                    </div>
-                </div>
+    <div class="contenedor-principal">
+        <!-- Contenedor de asientos -->
+        <div v-if="mostrarAsientos" class="asientos-container">
+            <h4>Seleccione asientos</h4>
+            <div class="asientos-inner-container">
+                <q-btn v-for="asiento in asientos" :key="asiento" class="asiento-btn" :label="asiento"
+                    @click="seleccionarAsiento(asiento)" :class="{
+                        'asiento-seleccionado': asientosSeleccionados.includes(asiento),
+                        'asiento-reservado': asiento.reservado,
+                    }" :color="asientosSeleccionados.includes(asiento) ? 'primary' : 'white'"
+                    :disable="asientosSeleccionados.includes(asiento)" text-color="black"
+                    style="width: 50px; height: 60px;">
+                    <q-icon v-if="asiento.reservado" :name="'check'" class="asiento-icon"
+                        style="color: green; margin-left: 4px;" />
+                    <q-icon v-else :name="'event_seat'" class="asiento-icon" style="margin-left: 4px;" />
+                </q-btn>
             </div>
-            <div v-else>
-                <q-btn @click="mostrarModalVenta" icon="add" color="primary">Agregar venta</q-btn>
-            </div>
-            <div v-if="asientoSeleccionado" class="formulario">
-                <h4>Asiento #{{ asientoSeleccionado.numero }}</h4>
-                <q-btn type="submit" color="primary" label="Buscar cliente" @click="filtrarclientes"
-                    class="q-ma-md"></q-btn>
-                <q-btn type="submit" color="primary" label="Agregar cliente" @click="mostrarDialogoAgregarEditarCliente"
-                    class="q-ma-md"></q-btn>
-                <form @submit.prevent="comprarBoleto">
-                    <label for="cedula">Cédula:</label>
-                    <q-input type="text" id="cedula" v-model="buscarCedula" outlined label="Cédula" required></q-input>
-                    <label for="telefono">Teléfono:</label>
-                    <q-input type="tel" id="telefono" v-model="telefono" outlined label="Teléfono" required></q-input>
-                    <label for="nombre">Nombre:</label>
-                    <q-input type="text" id="nombre" v-model="nombre" outlined label="Nombre" required></q-input>
+        </div>
 
-                    <q-banner v-if="clienteEncontrado" color="positive" icon="check" dense>
-                        Cliente encontrado
-                    </q-banner>
-                    <q-banner v-if="clienteNoEncontrado" color="negative" icon="warning" dense>
-                        Cliente no encontrado
-                    </q-banner>
+        <div v-else>
+            <q-btn @click="abrirModal" icon="add" color="primary" v-if="asientoSeleccionado === null">
+                Agregar venta
+            </q-btn>
+        </div>
 
+        <!-- Modal para registrar venta -->
+        <q-dialog v-model="mostrarModal" class="venta-dialog">
+            <q-card class="modal-content">
+                <q-card-section class="q-pa-md">
+                    <h4>Registrar Venta</h4>
+                    <q-select v-model="ruta" :options="rutas" label="Rutas"
+                        :rules="[val => val !== undefined && val !== '', 'Seleccione una ruta']" />
+                    <q-select v-model="busSeleccionado" :options="buses" label="Bus"
+                        :rules="[val => val !== undefined && val !== '', 'Seleccione un bus']" />
+                    <q-input v-model="fechaSalida" filled type="date" hint="Fecha de Salida" style="width: 300px"
+                        :rules="[val => validarFecha(val), 'La fecha debe ser válida y mayor o igual a hoy']" />
+                </q-card-section>
+                <q-card-actions align="right">
+                    <q-btn flat label="Cancelar" color="negative" v-close-popup></q-btn>
+                    <q-btn flat label="Guardar" color="primary" @click="guardarVentaYMostrarAsientos"
+                        :disable="!formularioValido" />
+                </q-card-actions>
+            </q-card>
+        </q-dialog>
 
-                    <q-btn type="submit" color="primary" label="Confirmar compra" class="q-ma-md"></q-btn>
-                </form>
-            </div>
-            <q-dialog v-model="mostrarModal" class="venta-dialog">
-                <q-card class="modal-content">
-                    <q-card-section class="q-pa-md">
-                        <h4>Registrar Venta</h4>
-                        <q-select v-model="ruta" :options="rutas" label="Rutas" />
-                        <q-select v-model="busSeleccionado" label="Bus" :options="buses"></q-select>
-                        <q-input v-model="fechaSalida" filled type="date" hint="Fecha de Salida" style="width: 300px" />
-                    </q-card-section>
-                    <q-card-actions align="right">
-                        <q-btn flat label="Cancelar" color="negative" v-close-popup></q-btn>
-                        <q-btn flat label="Guardar" color="primary" @click="guardarVenta" />
-                    </q-card-actions>
-                </q-card>
-            </q-dialog>
-
-            <q-dialog v-model="fixed">
-                <q-card class="modal-content">
-                    <q-card-section class="row items-center q-pb-none" style="color: black">
-                        <div class="text-h6">{{ text }}</div>
-                        <q-space />
-                        <q-btn icon="close" flat round dense @click="cerrarDialogo" />
-                    </q-card-section>
-                    <q-separator />
-
-                    <q-card-section style="max-height: 50vh" class="scroll">
-                        <q-input v-model="nuevaCedula" label="Cédula" style="width: 300px" />
-                        <q-input v-model="nuevoNombre" label="Nombre" style="width: 300px" />
-                        <q-input v-model="nuevoTelefono" label="Teléfono" style="width: 300px" />
-                    </q-card-section>
-
-                    <q-separator />
-
-                    <q-card-actions align="right">
-                        <q-btn flat label="Cerrar" color="primary" @click="cerrarDialogo" />
-                        <q-btn flat label="Guardar" color="primary" @click="agregarCliente" />
-                    </q-card-actions>
-                </q-card>
-            </q-dialog>
+        <!-- Formulario para el asiento seleccionado -->
+        <div v-if="asientoSeleccionado || mostrarModal" class="formulario">
+            <h4 v-if="asientoSeleccionado">Asiento #{{ asientoSeleccionado.numero }}</h4>
+            <q-btn v-if="asientoSeleccionado" type="submit" color="primary" label="Buscar cliente" @click="filtrarclientes"
+                class="q-ma-md"></q-btn>
+            <q-btn v-if="asientoSeleccionado" type="submit" color="primary" label="Agregar cliente"
+                @click="mostrarDialogoAgregarEditarCliente" class="q-ma-md"></q-btn>
+            <form v-if="asientoSeleccionado" @submit.prevent="comprarBoleto">
+                <q-input type="text" id="cedula" v-model="buscarCedula" outlined label="Cédula" required
+                    class="ml"></q-input>
+                <q-input type="tel" id="telefono" v-model="telefono" outlined label="Teléfono" required
+                    class="ml"></q-input>
+                <q-input type="text" id="nombre" v-model="nombre" outlined label="Nombre" required class="ml"></q-input>
+                <q-btn type="submit" color="primary" label="Confirmar compra" class="q-ma-md"></q-btn>
+            </form>
         </div>
     </div>
 </template>
   
 <script setup>
-import axios from "axios";
-import { ref, onMounted } from "vue";
-import { useClienteStore } from "../stores/clientes.js";
-import { useBusStore } from "../stores/buses";
-import { useRutasStore } from "../stores/rutas";
+import axios from 'axios';
+import { watch } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useBusStore } from '../stores/buses';
+import { useRutasStore } from '../stores/rutas';
+import { useClienteStore } from '../stores/clientes';
 
 const clienteStore = useClienteStore();
 const busStore = useBusStore();
 const rutasStore = useRutasStore();
-
-const fixed = ref(false);
-const text = ref("Agregar Cliente");
-
-const rows = ref([]);
-
-const filas = generateBusLayout(4, 10);
-const mostrarContenido = ref(false);
-const asientoSeleccionado = ref(null);
-const cedula = ref('');
-const telefono = ref('');
-const nombre = ref('');
 const mostrarModal = ref(false);
-const busSeleccionado = ref(null);
-const rutas = ref([]);
-const ruta = ref(null);
-const buses = ref([]);
-const fechaSalida = ref(null);
-const clienteEncontrado = ref(false);
-const clienteNoEncontrado = ref(false);
-const nuevaCedula = ref('');
-const nuevoNombre = ref('');
-const nuevoTelefono = ref('');
-const buscarCedula = ref('');
+let buscarCedula = ref('');
+let clienteEncontrado = ref(null);
+let buses = ref([]);
+let rutas = ref([]);
+let ruta = ref('');
+let busSeleccionado = ref('');
+let fechaSalida = ref('');
+const mostrarAsientos = ref(false);
+let asientos = ref([]);
+let asientosSeleccionados = ref([]);
 
-onMounted(async () => {
-    await clienteStore.getCliente();
+const cargarDatos = async () => {
     try {
         await busStore.getBuses();
-        buses.value = busStore.buses.map((bus) => bus.placa);
+        buses.value = busStore.buses
+            .filter((value) => value.estado)
+            .map((bus) => {
+                return {
+                    value: bus.placa,
+                    label: `${bus.placa} - ${bus.empresa_asignada} - (${bus.cantidad_asientos} asientos)`,
+                    cantidad_asientos: bus.cantidad_asientos,
+                    estado: bus.estado,
+                };
+            });
     } catch (error) {
-        console.error("Error al cargar la lista de placas de los buses:", error);
+        console.error('Error al cargar la lista de placas de los buses:', error);
     }
 
     try {
         await rutasStore.getRuta();
-        rutas.value = rutasStore.rutas.map((ruta) => ({
-            value: ruta.id,
-            label: `${ruta.origen} - ${ruta.destino}`,
-            origenDestino: `${ruta.origen} - ${ruta.destino}`
-        }));
+
+        rutas.value = rutasStore.rutas
+            .filter((value) => value.estado)
+            .map((ruta) => ({
+                value: ruta.id,
+                label: `${ruta.origen} - ${ruta.destino} - (${ruta.horario_id.hora_partida} - ${ruta.horario_id.hora_llegada})`,
+                origenDestino: `${ruta.origen} - ${ruta.destino}`,
+                horaPartida: ruta.horario_id.hora_partida,
+                horaLlegada: ruta.horario_id.hora_llegada,
+                estado: ruta.estado,
+            }));
     } catch (error) {
-        console.error("Error al cargar la lista de rutas o buses:", error);
-    }
-});
-
-const seleccionarAsiento = (asiento) => {
-    if (!asiento.reservado) {
-        if (asientoSeleccionado.value === asiento) {
-            asientoSeleccionado.value = null;
-        } else {
-            asientoSeleccionado.value = asiento;
-        }
-    }
-};
-
-const comprarBoleto = () => {
-    if (asientoSeleccionado.value) {
-        // Tu lógica para confirmar la compra del boleto y guardar los detalles de la venta
-        const venta = {
-            numeroTicket: generateTicketNumber(),
-            nombreVendedor: "Nombre del Vendedor",
-            fechaVenta: new Date(),
-            fechaSalida: fechaSalida.value,
-            horaSalida: "Hora de Salida",
-            ccPasajero: cedula.value,
-            nombrePasajero: nombre.value,
-            vehiculo: busSeleccionado.value,
-            origen: "Origen",
-            destino: "Destino",
-            silla: asientoSeleccionado.value.numero,
-            valor: "Valor",
-        };
-
-        // Agregar la venta a la tabla de tickets usando el clienteStore
-        clienteStore.agregarTicket(venta);
-
-        // Restablecer valores
-        asientoSeleccionado.value.classList.remove("selected-green");
-        asientoSeleccionado.value.classList.add("confirmed");
-        asientoSeleccionado.value = null;
-    }
-};
-
-
-// Función para generar un número de ticket único (solo como ejemplo, implementa la tuya)
-const generateTicketNumber = () => {
-    return Math.floor(Math.random() * 1000000) + 1;
-};
-
-const mostrarModalVenta = () => {
-    mostrarModal.value = true;
-};
-
-const guardarVenta = () => {
-    if (!ruta.value) {
-        showErrorMessage('Debes seleccionar una ruta.');
-        return;
+        console.error('Error al cargar la lista de rutas o buses:', error);
     }
 
-    if (!busSeleccionado.value) {
-        showErrorMessage('Debes seleccionar un bus.');
-        return;
+    try {
+        await clienteStore.getCliente();
+        console.log('Clientes:', clienteStore.clientes);
+    } catch (error) {
+
     }
-
-    if (!fechaSalida.value) {
-        showErrorMessage('Debes seleccionar una fecha de salida.');
-        return;
-    }
-
-    const fechaActual = new Date();
-    const fechaSeleccionada = new Date(fechaSalida.value);
-
-    if (fechaSeleccionada <= fechaActual) {
-        showErrorMessage('La fecha de salida debe ser a partir del día siguiente al actual.');
-        return;
-    }
-
-    mostrarModal.value = false;
-    mostrarContenido.value = true;
-};
-
-const mostrarDialogoAgregarEditarCliente = () => {
-    fixed.value = true;
-    text.value = "Agregar Cliente";
-};
-
-const cerrarDialogo = () => {
-    fixed.value = false;
-    cedula.value = '';
-    nombre.value = '';
-    telefono.value = '';
 };
 
 const filtrarclientes = async () => {
-    clienteEncontrado.value = false; // Reiniciar la bandera
-    clienteNoEncontrado.value = false; // Reiniciar la bandera
-
-    if (buscarCedula.value.trim() === "") {
-        // Si no hay cédula especificada, muestra todos los clientes
-        clienteStore.clientes = clienteStore.clientes;
-    } else {
-        // Filtra los clientes por cédula
-        try {
-            const clienteEncontrado = await clienteStore.getClienteByCedula(buscarCedula.value.trim());
-            console.log("Resultado de la búsqueda:", clienteEncontrado);
-            if (clienteEncontrado) {
-                console.log("Cliente encontrado");
-                // Actualizar el formulario con la información del cliente encontrado
-                cedula.value = clienteEncontrado.cedula;
-                nombre.value = clienteEncontrado.nombre;
-                telefono.value = clienteEncontrado.telefono;
-                clienteEncontrado.value = true; // Actualizar la bandera
-            } else {
-                console.log("Cliente no encontrado");
-                clienteNoEncontrado.value = true; // Actualizar la bandera
-                // Puedes mostrar un mensaje al usuario indicando que el cliente no fue encontrado
-            }
-        } catch (error) {
-            console.error("Error al buscar cliente por cédula:", error);
-            // Manejar el error según tus necesidades
-        }
-    }
-};
-
-const agregarCliente = async () => {
     try {
-        // Verificar que los campos no estén vacíos
-        if (!nuevaCedula.value || !nuevoNombre.value || !nuevoTelefono.value) {
-            showErrorMessage('Todos los campos son obligatorios');
-            return;
+        // Assuming that `buscarCedula.value` contains the entered Cedula
+        const cedulaBuscada = buscarCedula.value;
+        console.log('Cedula buscada:', cedulaBuscada);
+
+        // Log the cedulas of clients for troubleshooting
+        console.log('Cedulas de clientes:', clienteStore.clientes.map(cliente => cliente.cedula));
+
+        // Find the client with the matching Cedula
+        const clienteEncontrado = clienteStore.clientes.find(cliente => cliente.cedula === Number(cedulaBuscada));
+
+        if (clienteEncontrado) {
+            // Log the information of the found client
+            console.log('Cliente encontrado:', clienteEncontrado);
+        } else {
+            console.log('Cliente no encontrado');
         }
 
-        // Enviar la solicitud para agregar el nuevo cliente
-        const nuevoCliente = {
-            cedula: nuevaCedula.value,
-            nombre: nuevoNombre.value,
-            telefono: nuevoTelefono.value,
-        };
-
-        await clienteStore.postCliente(nuevoCliente);
-
-        // Actualizar la lista de clientes después de agregar uno nuevo
-        await clienteStore.getCliente();
-
-        // Limpiar los campos del nuevo cliente
-        nuevaCedula.value = '';
-        nuevoNombre.value = '';
-        nuevoTelefono.value = '';
-
-        showErrorMessage('Cliente agregado con éxito');
+        // Rest of your code...
+        // ...
     } catch (error) {
-
-
+        console.error('Error al buscar el cliente:', error);
     }
 };
 
-
-function generateBusLayout(filas, asientosPorFila) {
-    const layout = [];
-    let numeroSilla = 1;
-    for (let fila = 1; fila <= filas; fila++) {
-        const filaAsientos = [];
-        for (let asiento = 1; asiento <= asientosPorFila; asiento++) {
-            filaAsientos.push({ numero: numeroSilla, reservado: false });
-            numeroSilla++;
-        }
-        layout.push(filaAsientos);
-    }
-    return layout;
+const abrirModal = () => {
+    mostrarModal.value = true;
+    cargarDatos();
 }
 
-const showErrorMessage = (message) => {
-    alert(message);
+const hoy = new Date();
+
+const validarFecha = (dateString) => {
+    const selectedDate = new Date(dateString);
+    return (
+        !isNaN(selectedDate.getTime()) &&
+        selectedDate.toISOString().split('T')[0] >= hoy.toISOString().split('T')[0]
+    );
 };
+
+const guardarVentaYMostrarAsientos = () => {
+    cargarAsientos(busSeleccionado.value.cantidad_asientos);
+    console.log('Cantidad de asientos del bus seleccionado:', busSeleccionado.value.cantidad_asientos);
+
+    mostrarAsientos.value = true;
+    mostrarModal.value = false;
+};
+
+const cargarAsientos = (cantidadAsientos) => {
+    asientos.value = Array.from({ length: cantidadAsientos }, (_, index) => index + 1);
+    asientosSeleccionados.value = [];
+};
+
+let asientoSeleccionado = ref(null);
+
+const seleccionarAsiento = (asiento) => {
+    asientoSeleccionado.value = {
+        numero: asiento,
+    };
+    /* mostrarAsientos.value = false; */
+};
+
+const formularioValido = ref(false);
+
+watch([ruta, busSeleccionado, fechaSalida], () => {
+    formularioValido.value = validarFecha(fechaSalida.value) &&
+        ruta !== '' &&
+        busSeleccionado !== '';
+});
 </script>
-
+  
 <style scoped>
-* {
-    color: black;
-}
-
-.bus-layout {
+.contenedor-principal {
     display: flex;
-    flex-direction: row;
 }
 
-.asientos {
+.asientos-container {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.asientos-inner-container {
     display: flex;
-    flex-direction: column;
-    border-radius: 10px;
-    margin: 2rem 6rem 1rem 1rem;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 500px;
 }
 
-.fila {
-    display: flex;
-    margin: 5px;
-}
-
-.asiento {
-    margin: 5px;
-}
-
-.fila {
-    justify-content: center;
-    align-items: center;
-}
-
-.asiento-button {
-    width: auto;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: white;
-    cursor: pointer;
-    border: 1px solid #ccc;
-    border-radius: 10%;
-    font-weight: bold;
-    font-size: 14px;
-    color: #333;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s;
-}
-
-.asiento-button.selected {
-    background-color: green;
-    color: white;
-}
-
-.asiento-button.reserved {
-    background-color: #ff0000;
-}
-
-.asiento-button.confirmed {
-    background-color: blue;
-    color: white;
-}
-
-.asiento-icon {
-    font-size: 20px;
-}
-
-.venta-dialog {
+.formulario {
+    margin-left: 20px;
     max-width: 400px;
+    align-self: flex-start;
 }
 
-.q-select__label {
-    color: black;
-}
-.q-item__label {
-    color: black;
+.ml {
+    margin-bottom: 8px;
 }
 
-.q-theme-dark {
-    color: black;
+q-btn {
+    width: 20px;
+}
+
+h3 {
+    margin: 10px;
+}
+
+.asiento-seleccionado {
+    background-color: blue !important;
+    /* Ajusta el color según tu preferencia */
 }
 </style>
+  

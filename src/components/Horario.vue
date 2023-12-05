@@ -10,10 +10,10 @@
                 <q-separator />
 
                 <q-card-section style="max-height: 50vh" class="scroll">
-                    <q-input v-model="hora_partida" label="Hora_partida" style="width: 300px;"  />
+                    <q-input v-model="hora_partida" label="Hora_partida" style="width: 300px;" />
                     <q-input v-model="hora_llegada" label="Hora_llegada" style="width: 300px;" />
 
-                    
+
                 </q-card-section>
 
                 <q-separator />
@@ -29,22 +29,27 @@
             <div class="btn-agregar" style="margin-bottom: 5%;">
                 <q-btn color="primary" label="Agregar" @click="agregarHorario()" />
             </div>
-            <q-table title="Horario" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows" :columns="columns" row-key="name">
-                <template v-slot:body-cell-estado="props">
-                    <q-td :props="props">
-                        <label for="" v-if="props.row.estado == 1" style="color: green;">Activo</label>
-                        <label for="" v-else style="color: red;">Inactivo</label>
-                    </q-td>
-                </template>
-                <template v-slot:body-cell-opciones="props">
-                    <q-td :props="props" class="botones">
-                        <q-btn color="blue-4" style="margin-right: 5px;" text-color="black" @click="EditarHorario(props.row._id)"><q-icon name="edit"/></q-btn> 
-                        <q-btn color="green-4" glossy  @click="InactivarHorario(props.row._id)"
-                            v-if="props.row.estado == 1" ><q-icon name="toggle_on"/></q-btn> 
-                        <q-btn color="red-4" glossy @click="ActivarHorario(props.row._id)" v-else ><q-icon name="toggle_off"/></q-btn> 
-                    </q-td>
-                </template>
-            </q-table>
+
+            <div class="q-pa-md">
+                <q-table title="Horario" :rows="rows" :columns="columns" row-key="name">
+                    <template v-slot:body-cell-estado="props">
+                        <q-td :props="props">
+                            <label for="" v-if="props.row.estado == 1" style="color: green;">Activo</label>
+                            <label for="" v-else style="color: red;">Inactivo</label>
+                        </q-td>
+                    </template>
+                    <template v-slot:body-cell-opciones="props">
+                        <q-td :props="props" class="botones">
+                            <q-btn color="blue-4" style="margin-right: 5px;" text-color="black"
+                                @click="EditarHorario(props.row._id)"><q-icon name="edit" /></q-btn>
+                            <q-btn color="green-4" glossy @click="InactivarHorario(props.row._id)"
+                                v-if="props.row.estado == 1"><q-icon name="toggle_on" /></q-btn>
+                            <q-btn color="red-4" glossy @click="ActivarHorario(props.row._id)" v-else><q-icon
+                                    name="toggle_off" /></q-btn>
+                        </q-td>
+                    </template>
+                </q-table>
+            </div>
         </div>
     </div>
 </template>
@@ -54,7 +59,7 @@ import axios from 'axios';
 import { ref, onMounted } from 'vue';
 import { format } from 'date-fns';
 import { useHorarioStore } from '../stores/horario.js';
-const   HorarioStore = useHorarioStore()
+const HorarioStore = useHorarioStore()
 
 let horarios = ref([]);
 let rows = ref([]);
@@ -82,8 +87,8 @@ onMounted(async () => {
 const columns = [
     { name: 'hora_partida', label: 'Hora_partida', field: 'hora_partida', sortable: true },
     { name: 'hora_llegada', label: 'Hora_llegada', field: 'hora_llegada', sortable: true },
-,
-    
+    ,
+
     { name: 'estado', label: 'Estado', field: 'estado', sortable: true, format: (val) => (val ? 'Activo' : 'Inactivo') },
     {
         name: 'createAT', label: 'Fecha de Creación', field: 'createAT', sortable: true,
@@ -118,8 +123,8 @@ async function agregarEditarHorario() {
         if (id) {
             await HorarioStore.putHorario(id, {
                 hora_partida: hora_partida.value,
-                hora_llegada: hora_llegada.value, 
-        
+                hora_llegada: hora_llegada.value,
+
             });
             limpiar();
             obtenerInfo();
@@ -162,6 +167,10 @@ async function ActivarHorario(id) {
 <style scoped>
 .q-table-container .q-td.opciones {
     text-align: center;
+}
+
+h3 {
+    margin: 5px;
 }
 
 .q-btn.opcion-btn {

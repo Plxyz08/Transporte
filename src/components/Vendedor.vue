@@ -28,31 +28,46 @@
     </q-dialog>
     <div>
       <h3>Vendedores</h3>
-      <div class="btn-agregar" style="margin-bottom: 5%">
-        <q-btn color="primary" label="Agregar" @click="agregarVendedor()" />
+      <q-row>
+        <!-- Single column for both "Agregar Vendedor" and "Buscar por Cedula" -->
+        <q-col class="col-container" :span="12">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <!-- "Agregar Vendedor" button -->
+            <div class="btn-agregar">
+              <q-btn color="primary" label="Agregar" @click="agregarVendedor()" />
+            </div>
+
+            <!-- "Buscar por Cedula" input and "Buscar" button -->
+            <div style="display: flex; align-items: center;">
+              <q-input v-model="buscarCedula" label="Buscar por Cedula"
+                style="width: 300px; border-radius: 10px; background-color: azure; margin-right: 10px;" />
+              <q-btn color="primary" label="Buscar" @click="filtrarVendedores" class="btnbuscar" />
+            </div>
+          </div>
+        </q-col>
+      </q-row>
+
+      <div class="q-pa-md">
+        <q-table title="Vendedores" :rows="rows"
+          :columns="columns" row-key="name">
+          <template v-slot:body-cell-estado="props">
+            <q-td :props="props">
+              <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
+              <label for="" v-else style="color: red">Inactivo</label>
+            </q-td>
+          </template>
+          <template v-slot:body-cell-opciones="props">
+            <q-td :props="props" class="botones">
+              <q-btn color="blue-4" style="margin-right: 5px" text-color="black"
+                @click="EditarVendedor(props.row._id)"><q-icon name="edit" /></q-btn>
+              <q-btn color="green-4" glossy @click="InactivarVendedor(props.row._id)" v-if="props.row.estado == 1"><q-icon
+                  name="toggle_on" /></q-btn>
+              <q-btn color="red-4" glossy @click="ActivarVendedor(props.row._id)" v-else><q-icon
+                  name="toggle_off" /></q-btn>
+            </q-td>
+          </template>
+        </q-table>
       </div>
-      <q-input v-model="buscarCedula" label="Buscar por Cedula"
-        style="width: 300px; border-radius: 10px; background-color: azure; margin: 0 auto;" class="centrado" />
-      <q-btn style="margin-top: 10px;" color="primary" label="Buscar" @click="filtrarVendedores" class="btnbuscar" />
-      <q-table title="Vendedores" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows"
-        :columns="columns" row-key="name">
-        <template v-slot:body-cell-estado="props">
-          <q-td :props="props">
-            <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
-            <label for="" v-else style="color: red">Inactivo</label>
-          </q-td>
-        </template>
-        <template v-slot:body-cell-opciones="props">
-          <q-td :props="props" class="botones">
-            <q-btn color="blue-4" style="margin-right: 5px" text-color="black"
-              @click="EditarVendedor(props.row._id)"><q-icon name="edit" /></q-btn>
-            <q-btn color="green-4" glossy @click="InactivarVendedor(props.row._id)" v-if="props.row.estado == 1"><q-icon
-                name="toggle_on" /></q-btn>
-            <q-btn color="red-4" glossy @click="ActivarVendedor(props.row._id)" v-else><q-icon
-                name="toggle_off" /></q-btn>
-          </q-td>
-        </template>
-      </q-table>
     </div>
   </div>
 </template>
@@ -209,6 +224,10 @@ async function ActivarVendedor(id) {
 <style scoped>
 .q-table-container .q-td.opciones {
   text-align: center;
+}
+
+h3{
+  margin: 5px;
 }
 
 .q-btn.opcion-btn {

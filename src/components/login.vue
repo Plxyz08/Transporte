@@ -1,6 +1,6 @@
 <script>
 import { ref } from 'vue';
-import { useAdminStore } from "../stores/login.js"
+import { useAdminStore } from "../stores/login"
 import { useRouter } from "vue-router"
 import { useQuasar } from 'quasar'
 
@@ -70,7 +70,7 @@ export default {
             </template>
           </q-btn>  -->
           <q-btn :loading="useAdmin.loading" color="blue" @click="iniciar()">
-            Entrar
+            Ingresar
             <template v-slot:loading>
               <q-spinner-radio />
             </template>

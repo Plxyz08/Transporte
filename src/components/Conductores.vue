@@ -26,31 +26,46 @@
     </q-dialog>
     <div>
       <h3>Conductores</h3>
-      <div class="btn-agregar" style="margin-bottom: 5%">
-        <q-btn color="primary" name="add" label="Agregar" @click="agregarConductor()" />
+      <q-row>
+        <!-- Single column for both "Agregar Conductor" and "Buscar por Cedula" -->
+        <q-col class="col-container" :span="12">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <!-- "Agregar Conductor" button -->
+            <div class="btn-agregar">
+              <q-btn color="primary" name="add" label="Agregar" @click="agregarConductor()" />
+            </div>
+
+            <!-- "Buscar por Cedula" input and "Buscar" button -->
+            <div style="display: flex; align-items: center;">
+              <q-input v-model="buscarcedula" label="Buscar por Cedula"
+                style="width: 300px; border-radius: 10px; background-color: azure; margin-right: 10px;" />
+              <q-btn color="primary" label="Buscar" @click="filtrarconductores" class="btnbuscar" />
+            </div>
+          </div>
+        </q-col>
+      </q-row>
+
+      <div class="q-pa-md">
+        <q-table title="Conductores" :rows="rows"
+          :columns="columns" row-key="name">
+          <template v-slot:body-cell-estado="props">
+            <q-td :props="props">
+              <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
+              <label for="" v-else style="color: red">Inactivo</label>
+            </q-td>
+          </template>
+          <template v-slot:body-cell-opciones="props">
+            <q-td :props="props" class="botones">
+              <q-btn color="blue-4" style="margin-right: 5px" text-color="black"
+                @click="EditarConductor(props.row._id)"><q-icon name="edit" /></q-btn>
+              <q-btn color="green-4" glossy @click="InactivarConductor(props.row._id)"
+                v-if="props.row.estado == 1"><q-icon name="toggle_on" /></q-btn>
+              <q-btn color="red-4" glossy @click="ActivarConductors(props.row._id)" v-else><q-icon
+                  name="toggle_off" /></q-btn>
+            </q-td>
+          </template>
+        </q-table>
       </div>
-      <q-input v-model="buscarcedula" label="Buscar por Placa"
-        style=" width: 300px; border-radius: 10px; background-color: azure; margin: 0 auto;" class="centrado" />
-      <q-btn style="margin-top: 10px;" color="primary" label="Buscar" @click="filtrarconductores" class="btnbuscar" />
-      <q-table title="Conductores" style="width: 1500px; margin-top: 10px; margin-left:-10%;" :rows="rows"
-        :columns="columns" row-key="name">
-        <template v-slot:body-cell-estado="props">
-          <q-td :props="props">
-            <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
-            <label for="" v-else style="color: red">Inactivo</label>
-          </q-td>
-        </template>
-        <template v-slot:body-cell-opciones="props">
-          <q-td :props="props" class="botones">
-            <q-btn color="blue-4" style="margin-right: 5px" text-color="black"
-              @click="EditarConductor(props.row._id)"><q-icon name="edit" /></q-btn>
-            <q-btn color="green-4" glossy @click="InactivarConductor(props.row._id)" v-if="props.row.estado == 1"><q-icon
-                name="toggle_on" /></q-btn>
-            <q-btn color="red-4" glossy @click="ActivarConductors(props.row._id)" v-else><q-icon
-                name="toggle_off" /></q-btn>
-          </q-td>
-        </template>
-      </q-table>
     </div>
   </div>
 </template>
@@ -183,12 +198,18 @@ async function ActivarConductors(id) {
   obtenerInfo();
 }
 function filtrarconductores() {
-    if (buscarcedula.value.trim() === "") {
-        rows.value = conductores.value;
-    } else {
-        rows.value = conductores.value.filter((conductores) =>
-            conductores.cedula.toString().includes(buscarcedula.value.toString())
-        );
-    };
+  if (buscarcedula.value.trim() === "") {
+    rows.value = conductores.value;
+  } else {
+    rows.value = conductores.value.filter((conductores) =>
+      conductores.cedula.toString().includes(buscarcedula.value.toString())
+    );
+  };
 };
 </script>
+
+<style scoped>
+h3{
+  margin: 5px;
+}
+</style>
