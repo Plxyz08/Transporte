@@ -61,7 +61,8 @@
                 <q-input type="number" id="telefono" v-model="telefono" outlined label="Teléfono" required
                     class="ml"></q-input>
                 <q-input type="text" id="nombre" v-model="nombre" outlined label="Nombre" required class="ml"></q-input>
-                <q-btn type="submit" color="primary" label="Confirmar compra" class="q-ma-md" @click="confirmarCompra"></q-btn>
+                <q-btn type="submit" color="primary" label="Confirmar compra" class="q-ma-md"
+                    @click="confirmarCompra"></q-btn>
             </form>
         </div>
 
@@ -78,7 +79,7 @@
                 <q-card-actions align="right">
                     <q-btn flat label="Cancelar" color="negative" @click="cerrarModalCliente" />
                     <q-btn flat label="Guardar" color="primary" @click="guardarCliente"
-                        :disable="!formularioClienteValido"/>
+                        :disable="!formularioClienteValido" />
                 </q-card-actions>
 
             </q-card>
@@ -96,6 +97,7 @@ import { useRutasStore } from '../stores/rutas';
 import { useClienteStore } from '../stores/clientes';
 import { useVentasStore } from '../stores/ventas';
 import { useAdminStore } from '../stores/login';
+import { useVendedorStore } from '../stores/vendedor'
 import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
@@ -103,6 +105,7 @@ const mostrarModalCliente = ref(false);
 const clienteStore = useClienteStore();
 const busStore = useBusStore();
 const ventasStore = useVentasStore();
+const vendedorStore = useVendedorStore();
 const adminStore = useAdminStore();
 const rutasStore = useRutasStore();
 const mostrarModal = ref(false);
@@ -110,6 +113,7 @@ let buscarCedula = ref('');
 let clienteEncontrado = ref(null);
 let buses = ref([]);
 let rutas = ref([]);
+let vendedor = ref({});
 let ruta = ref('');
 let newCedula = ref();
 let newTelefono = ref();
@@ -166,14 +170,31 @@ const cargarDatos = async () => {
     } catch (error) {
 
     }
+
+    try {
+        await vendedorStore.getVendedor();
+        const tokenDelVendedor = vendedorStore.vendedor.token;
+        console.log('Token del vendedor:', tokenDelVendedor);
+        console.log('Información del vendedor:', vendedorStore.vendedor);
+    } catch (error) {
+        console.error('Error al cargar la lista de rutas, buses o vendedor:', error);
+    }
+
+    try {
+        await adminStore.login();
+        console.log(useAdmin.token);
+
+    } catch (error) {
+        
+    }
 };
 
 const filtrarclientes = async () => {
     try {
         const cedulaBuscada = buscarCedula.value;
-        console.log('Cedula buscada:', cedulaBuscada);
+        /* console.log('Cedula buscada:', cedulaBuscada);
 
-        console.log('Cedulas de clientes:', clienteStore.clientes.map(cliente => cliente.cedula));
+        console.log('Cedulas de clientes:', clienteStore.clientes.map(cliente => cliente.cedula)); */
 
         const clienteEncontrado = clienteStore.clientes.find(cliente => cliente.cedula === Number(cedulaBuscada));
 
@@ -236,7 +257,6 @@ const validarFecha = (dateString) => {
 
 const guardarVentaYMostrarAsientos = async () => {
     try {
-        await new Promise(resolve => setTimeout(resolve, 2000));
         cargarAsientos(busSeleccionado.value.cantidad_asientos);
         mostrarAsientos.value = true;
         mostrarModal.value = false;
@@ -261,11 +281,32 @@ const seleccionarAsiento = (asiento) => {
 
 const confirmarCompra = async () => {
     try {
-        await ventasStore.postTicket({
-            
-        })
+        // Asegúrate de que vendedorStore.vendedor existe y tiene la propiedad token
+        if (!vendedorStore.vendedor || !vendedorStore.vendedor.token) {
+            console.error('Token del vendedor no definido en confirmarCompra');
+            return;
+        }
+
+        const vendedor_id = vendedorStore.vendedor.token;
+        console.log('Información del token:', vendedor_id);
+
+        const data = {
+            vendedor_id: String(vendedor.vendedor._id),
+            cliente_id: cliente_id.value,
+            ruta_id: ruta._rawValue.value,
+            bus_id: bus._rawValue.value,
+            no_asiento: no_asiento.value,
+            fecha_departida: fecha_departida.value,
+        };
+
+        await ventasStore.postTicket(data);
+
+        greatMessage.value = "Ticket creado exitosamente";
+        showGreat();
     } catch (error) {
-        
+        console.error('Error al confirmar la compra:', error);
+        badMessage.value = error.response.data.error.errors[0].msg || "Error al crear ticket";
+        showBad();
     }
 };
 
