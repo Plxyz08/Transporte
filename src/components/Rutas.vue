@@ -83,7 +83,7 @@ async function obtenerInfo() {
   try {
     await rutasStore.getRuta();
     rutas.value = rutasStore.rutas;
-    rows.value = rutasStore.rutas;
+    rows.value = rutasStore.rutas.reverse();
   } catch (error) {
     console.log(error);
   }

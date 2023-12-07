@@ -92,7 +92,7 @@ async function obtenerInfo() {
   try {
     await ClienteStore.getCliente();
     clientes.value = ClienteStore.clientes;
-    rows.value = ClienteStore.clientes;
+    rows.value = ClienteStore.clientes.reverse();
   } catch (error) {
     console.log(error);
   }
