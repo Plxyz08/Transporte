@@ -2,10 +2,11 @@
     <div>
         <h3>Tickets</h3>
         <q-row>
-            <!-- Single column for both "Agregar Cliente" and "Buscar por cedula" -->
+            <!-- Single column for both "Agregar Cliente" and "Buscar por fecha" -->
             <q-col class="col-container" :span="12">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <!-- "Agregar Cliente" button -->
+
+                    <!-- "Agregar Ticket" button -->
                     <div class="btn-agregar">
                         <q-btn color="primary" label="Agregar" @click="agregarCliente()" />
                     </div>
@@ -14,15 +15,43 @@
                     <div style="display: flex; align-items: center;">
                         <q-input v-model="buscarFecha" label="Buscar por fecha"
                             style="width: 300px; border-radius: 10px; background-color: azure; margin-right: 10px;" />
-                        <q-btn color="primary" label="Buscar" @click="filtrarclientes" class="btnbuscar" />
+                        <q-btn color="primary" label="Buscar" @click="filtrarTickets" class="btnbuscar" />
                     </div>
                 </div>
             </q-col>
         </q-row>
 
+        <!-- model editar Ticket  -->
+        <q-dialog v-model="fixed">
+            <q-card class="modal-content">
+                <q-card-section class="row items-center q-pb-none" style="color: black">
+                    <div class="text-h6">Editar Ticket</div>
+                    <q-space />
+                    <q-btn icon="close" flat round dense v-close-popup />
+                </q-card-section>
+                <q-separator />
+
+                <q-card-section style="max-height: 50vh" class="scroll">
+                    <q-select v-model="selectedTicket.cliente" :options="Clientes" label="Cliente" />
+                    <q-select v-model="selectedTicket.bus" :options="Buses" label="Bus" />
+                    <q-select v-model="selectedTicket.vendedor" :options="Vendedores" label="Vendedor" />
+                    <q-input type="number" v-model="selectedTicket.no_asiento" label="N° asiento" />
+                    <q-input type="date" v-model="selectedTicket.fecha_departida" label="Fecha de partida" />
+                </q-card-section>
+
+                <q-separator />
+
+                <q-card-actions align="right">
+                    <q-btn flat label="Cerrar" color="primary" v-close-popup />
+                    <q-btn flat label="Guardar" color="primary" @click="EditarTicket" />
+                </q-card-actions>
+            </q-card>
+        </q-dialog>
+
     </div>
     <div class="q-pa-md">
-        <q-table title="Tickets" :rows="tickets.ticket" :columns="columns" row-key="name">
+        <q-table title="Tickets" :rows="tickets.ticket" :columns="columns" row-key="name" virtual-scroll
+            v-model:pagination="pagination">
             <template v-slot:body-cell-estado="props">
                 <q-td :props="props">
                     <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
@@ -33,7 +62,7 @@
             <template v-slot:body-cell-opciones="props">
                 <q-td :props="props" class="botones">
                     <q-btn color="blue-4" style="margin-right: 5px" text-color="black"
-                        @click="EditarTicket(props.row._id)"><q-icon name="edit" /></q-btn>
+                        @click="editarTicket(props.row._id)"><q-icon name="edit" /></q-btn>
                     <q-btn color="amber" style="margin-right: 5px" text-color="black"
                         @click="imprimirPDF(props.row._id)"><q-icon name="print" /></q-btn>
                     <q-btn color="green-4" glossy @click="InactivarTicket(props.row._id)"
@@ -52,6 +81,9 @@ import { ref, onMounted, nextTick } from 'vue';
 import { format } from 'date-fns';
 import html2pdf from 'html2pdf.js';
 import { useVentasStore } from '../stores/ventas';
+import { useClienteStore } from '../stores/clientes';
+import { useBusStore } from '../stores/buses';
+import { useVendedorStore } from '../stores/vendedor';
 
 const columns = [
     { name: "cliente_id", label: "Info Cliente", field: (row) => `${row.cliente_id.nombre} - ${row.cliente_id.cedula}- ${row.cliente_id.telefono}`, },
@@ -69,11 +101,101 @@ const columns = [
 export default {
     setup() {
         const ventasStore = useVentasStore();
+        const clientesStore = useClienteStore();
+        const busStore = useBusStore();
+        const vendedorStore = useVendedorStore();
         const tickets = ref([]);
+        const Clientes = ref([]);
+        const Buses = ref([]);
+        const Vendedores = ref([]);
+        const selectedTicket = ref(null);
+        const fixed = ref(false);
+        const pagination = ref({});
+        const buscarFecha = ref('');
+        const fecha_departida = ref(null);
 
         const obtenerInfo = async () => {
             await ventasStore.getTicket();
             tickets.value = ventasStore.tickets;
+        };
+
+        const obtenerClientes = async () => {
+            try {
+                await clientesStore.getCliente();
+                Clientes.value = clientesStore.clientes.map((cliente) => ({
+                    label: `${cliente.nombre} - ${cliente.cedula} - ${cliente.telefono}`,
+                    value: String(cliente._id),
+                }))
+            } catch (error) {
+                console.log(error);
+            }
+
+        };
+
+        const obtenerBuses = async () => {
+            try {
+                await busStore.getBuses();
+                Buses.value = busStore.buses.map((bus) => ({
+                    label: `${bus.placa} - ${bus.empresa_asignada} - ${bus.numero_bus}`,
+                    value: String(bus._id),
+                }))
+            } catch (error) {
+                console.log(error);
+            }
+
+        };
+
+        const obtenerVendedores = async () => {
+            try {
+                await vendedorStore.getVendedor();
+                Vendedores.value = vendedorStore.vendedor.map((vendedor) => ({
+                    label: `${vendedor.nombre} - ${vendedor.telefono}`,
+                    value: String(vendedor._id),
+                }))
+            } catch (error) {
+                console.log(error);
+            }
+
+        };
+
+        const editarTicket = async (id) => {
+            // Find the selected ticket by ID
+            const selectedTicketData = tickets.value.ticket.find((ticket) => ticket._id === id);
+
+            // Make sure the selected ticket is found
+            if (selectedTicketData) {
+                // Copy data from selected ticket to selectedTicket ref
+                selectedTicket.value = {
+                    cliente: selectedTicketData.cliente_id._id, 
+                    bus: selectedTicketData.bus_id._id, 
+                    vendedor: selectedTicketData.vendedor_id._id, 
+                    no_asiento: selectedTicketData.no_asiento,
+                    fecha_departida: selectedTicketData.fecha_departida,
+                };
+
+                // Load additional data
+                await Promise.all([obtenerClientes(), obtenerBuses(), obtenerVendedores()]);
+
+                // Access properties from the selected ticket and do something with them
+                console.log(selectedTicket.value.fecha_departida);
+
+                // Set fixed to true
+                fixed.value = true;
+            } else {
+                console.error('Selected ticket not found');
+            }
+        };
+
+
+
+        const closeModal = () => {
+            selectedTicket.value = null;
+            fixed.value = false;
+        };
+
+        const EditarTicket = async () => {
+
+            closeModal();
         };
 
         const ActivarTicket = async (id) => {
@@ -128,16 +250,37 @@ export default {
             }
         };
 
+        const filtrarTickets = async () => {
+            await ventasStore.buscarTickets
+        }
+
         onMounted(() => {
             obtenerInfo();
+
+        });
+
+        onMounted(async () => {
+            fecha_departida.value = await fetchData();
         });
 
         return {
             columns,
             tickets,
+            pagination,
             ActivarTicket,
             InactivarTicket,
-            imprimirPDF
+            imprimirPDF,
+            editarTicket,
+            fixed,
+            selectedTicket,
+            Clientes,
+            Buses,
+            Vendedores,
+            closeModal,
+            EditarTicket,
+            filtrarTickets,
+            buscarFecha,
+            fecha_departida,
         };
     },
 };

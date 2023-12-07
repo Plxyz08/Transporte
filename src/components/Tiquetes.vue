@@ -32,11 +32,11 @@
                 <q-card-section class="q-pa-md">
                     <h4>Registrar Venta</h4>
                     <q-select v-model="ruta" :options="rutas" label="Rutas"
-                        :rules="[val => val !== undefined && val !== '', 'Seleccione una ruta']" />
+                        :rules="[val => val !== undefined && val !== '' || 'Seleccione una ruta']" />
                     <q-select v-model="busSeleccionado" :options="buses" label="Bus"
-                        :rules="[val => val !== undefined && val !== '', 'Seleccione un bus']" />
+                        :rules="[val => val !== undefined && val !== '' || 'Seleccione un bus']" />
                     <q-input v-model="fechaSalida" filled type="date" hint="Fecha de Salida" style="width: 300px"
-                        :rules="[val => validarFecha(val), 'La fecha debe ser válida y mayor o igual a hoy']" />
+                        :rules="[val => validarFecha(val) || 'La fecha debe ser válida y mayor o igual a hoy']" />
                 </q-card-section>
                 <q-card-actions align="right">
                     <q-btn flat label="Cancelar" color="negative" v-close-popup></q-btn>
@@ -66,25 +66,6 @@
             </form>
         </div>
 
-        <!-- Modal para agregar cliente -->
-        <q-dialog v-model="mostrarModalCliente" class="cliente-dialog">
-            <q-card class="modal-content">
-                <q-card-section class="q-pa-md">
-                    <h4>Agregar Cliente</h4>
-                    <q-input v-model="newCedula" label="Cédula" outlined :rules="cedulaRules" />
-                    <q-input v-model="newNombre" label="Nombre" outlined :rules="nombreRules" />
-                    <q-input v-model="newTelefono" label="Teléfono" outlined :rules="telefonoRules" />
-                    <q-spinner v-if="loadingCliente" color="primary" size="40px" />
-                </q-card-section>
-                <q-card-actions align="right">
-                    <q-btn flat label="Cancelar" color="negative" @click="cerrarModalCliente" />
-                    <q-btn flat label="Guardar" color="primary" @click="guardarCliente"
-                        :disable="!formularioClienteValido" />
-                </q-card-actions>
-
-            </q-card>
-        </q-dialog>
-
     </div>
 </template>
   
@@ -101,7 +82,6 @@ import { useVendedorStore } from '../stores/vendedor'
 import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
-const mostrarModalCliente = ref(false);
 const clienteStore = useClienteStore();
 const busStore = useBusStore();
 const ventasStore = useVentasStore();
@@ -125,10 +105,6 @@ let fechaSalida = ref('');
 const mostrarAsientos = ref(false);
 let asientos = ref([]);
 let asientosSeleccionados = ref([]);
-
-const cerrarModalCliente = () => {
-    mostrarModalCliente.value = false;
-};
 
 const cargarDatos = async () => {
     try {
@@ -173,19 +149,19 @@ const cargarDatos = async () => {
 
     try {
         await vendedorStore.getVendedor();
-        const tokenDelVendedor = vendedorStore.vendedor.token;
+        const tokenDelVendedor = vendedorStore.vendedor.id.token;
         console.log('Token del vendedor:', tokenDelVendedor);
-        console.log('Información del vendedor:', vendedorStore.vendedor);
+        console.log('Información del vendedor:', vendedorStore.vendedor_data);
     } catch (error) {
-        console.error('Error al cargar la lista de rutas, buses o vendedor:', error);
+        console.error('Error vendedor', error);
     }
 
     try {
         await adminStore.login();
-        console.log(useAdmin.token);
+        
 
     } catch (error) {
-        
+
     }
 };
 
@@ -208,35 +184,13 @@ const filtrarclientes = async () => {
             showGreat();
             /* console.log('Cliente encontrado:', clienteEncontrado); */
         } else {
-            clienteEncontrado.value = false;
-            badMessage.value = "No existe registro";
+            badMessage.value = "No existe registro, debe crear el cliente";
             showBad();
-            console.log('Cliente no encontrado');
+            console.log('Cliente no encontrado, debe crearlo');
         }
 
     } catch (error) {
         console.error('Error al buscar el cliente:', error);
-    }
-};
-
-const agregarCliente = () => {
-    mostrarModalCliente.value = true;
-};
-
-const guardarCliente = async () => {
-    loadingCliente.value = true;
-
-    try {
-        await clienteStore.postCliente({
-            cedula: newCedula.value,
-            nombre: newNombre.value,
-            telefono: newTelefono.value,
-        });
-
-    } catch (error) {
-        console.error('Error saving client:', error);
-    } finally {
-        loadingCliente.value = false;
     }
 };
 
@@ -275,38 +229,41 @@ let asientoSeleccionado = ref(null);
 const seleccionarAsiento = (asiento) => {
     asientoSeleccionado.value = {
         numero: asiento,
+        
     };
     /* mostrarAsientos.value = false; */
 };
 
 const confirmarCompra = async () => {
-    try {
-        // Asegúrate de que vendedorStore.vendedor existe y tiene la propiedad token
-        if (!vendedorStore.vendedor || !vendedorStore.vendedor.token) {
-            console.error('Token del vendedor no definido en confirmarCompra');
-            return;
+    if (clienteEncontrado.value == true) {
+        try {
+            // Asegúrate de que vendedorStore.vendedor existe y tiene la propiedad token
+            if (!vendedorStore.vendedor || !vendedorStore.vendedor_data.token) {
+                console.error('Token del vendedor no definido en confirmarCompra');
+                return;
+            }
+
+            const vendedor_id = vendedorStore.vendedor.token;
+            console.log('Información del token:', vendedor_id);
+
+            const data = {
+                vendedor_id: String(vendedor.vendedor._id),
+                cliente_id: cliente_id.value,
+                ruta_id: ruta._rawValue.value,
+                bus_id: bus._rawValue.value,
+                no_asiento: no_asiento.value,
+                fecha_departida: fecha_departida.value,
+            };
+
+            await ventasStore.postTicket(data);
+
+            greatMessage.value = "Ticket creado exitosamente";
+            showGreat();
+        } catch (error) {
+            console.error('Error al confirmar la compra:', error);
+            badMessage.value = error.response.data.error.errors[0].msg || "Error al crear ticket";
+            showBad();
         }
-
-        const vendedor_id = vendedorStore.vendedor.token;
-        console.log('Información del token:', vendedor_id);
-
-        const data = {
-            vendedor_id: String(vendedor.vendedor._id),
-            cliente_id: cliente_id.value,
-            ruta_id: ruta._rawValue.value,
-            bus_id: bus._rawValue.value,
-            no_asiento: no_asiento.value,
-            fecha_departida: fecha_departida.value,
-        };
-
-        await ventasStore.postTicket(data);
-
-        greatMessage.value = "Ticket creado exitosamente";
-        showGreat();
-    } catch (error) {
-        console.error('Error al confirmar la compra:', error);
-        badMessage.value = error.response.data.error.errors[0].msg || "Error al crear ticket";
-        showBad();
     }
 };
 
@@ -342,8 +299,7 @@ const formularioValido = ref(false);
 
 watch([ruta, busSeleccionado, fechaSalida], () => {
     formularioValido.value = validarFecha(fechaSalida.value) &&
-        ruta !== '' &&
-        busSeleccionado !== '';
+        ruta !== '' && busSeleccionado !== '';
 });
 </script>
   

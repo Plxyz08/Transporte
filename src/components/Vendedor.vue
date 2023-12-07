@@ -26,6 +26,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    
     <div>
       <h3>Vendedores</h3>
       <q-row>
