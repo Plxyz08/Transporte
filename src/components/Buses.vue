@@ -49,8 +49,7 @@
             </q-row>
 
             <div class="q-pa-md">
-                <q-table title="Buses" :rows="rows"
-                    :columns="columns" row-key="name">
+                <q-table title="Buses" :rows="rows" :columns="columns" row-key="name">
                     <template v-slot:body-cell-estado="props">
                         <q-td :props="props">
                             <label for="" v-if="props.row.estado == 1" style="color: green;">Activo</label>
@@ -79,36 +78,40 @@ import { ref, onMounted } from 'vue';
 import { format } from 'date-fns';
 import { useBusStore } from '../stores/buses.js';
 import { useConductorStore } from '../stores/conductores.js';
+import { useQuasar } from 'quasar';
 
-const busStore = useBusStore()
+const $q = useQuasar();
+const busStore = useBusStore();
 const conductorStore = useConductorStore();
 
 let buses = ref([]);
 let rows = ref([]);
-let fixed = ref(false)
-let text = ref('')
+let fixed = ref(false);
+let text = ref('');
 let placa = ref('');
-let numero_bus = ref();
+let numero_bus = ref('');
 let cantidad_asientos = ref('');
 let empresa_asignada = ref('');
-let cambio = ref(0)
-let conductorSeleccionado = ref("");
+let cambio = ref(0);
+let conductorSeleccionado = ref('');
 let conductores = ref([]);
-let buscarplaca = ref("");
+let buscarplaca = ref('');
+let notificacion = ref(null);
 
 async function obtenerInfo() {
     try {
         await busStore.getBuses();
         buses.value = busStore.buses;
-        rows.value = busStore.buses;
+        rows.value = busStore.buses.reverse();
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
+
 async function obtenerConductores() {
     try {
         await conductorStore.getConductor();
-        conductores.value = conductorStore.conductores.map(conductor => ({
+        conductores.value = conductorStore.conductores.map((conductor) => ({
             label: `${conductor.nombre} - ${conductor.telefono}`,
             value: conductor._id,
         }));
@@ -119,7 +122,7 @@ async function obtenerConductores() {
 }
 
 onMounted(async () => {
-    obtenerInfo()
+    await obtenerInfo();
     await obtenerConductores();
 
 });
@@ -163,54 +166,116 @@ const columns = [
 
 function agregarBus() {
     fixed.value = true;
-    text.value = "Agregar Bus";
-    cambio.value = 0
+    text.value = 'Agregar Bus';
+    cambio.value = 0;
     limpiar();
 }
 
 async function agregarEditarBus() {
-    if (cambio.value === 0) {
-        await busStore.postBus({
-            placa: placa.value,
-            numero_bus: numero_bus.value,
-            cantidad_asientos: cantidad_asientos.value,
-            empresa_asignada: empresa_asignada.value,
-            conductor_id: conductorSeleccionado._rawValue.value
-        });
-        limpiar();
-        obtenerInfo();
-        fixed.value = false;
-        rows.value = [...buses.value].sort((a, b) => {
-            return new Date(b.createAT) - new Date(a.createAT);
-        });
-    } else {
-        let id = idBus.value;
-        if (id) {
-            await busStore.putEditarBus(id, {
-                placa: placa.value,
-                numero_bus: numero_bus.value,
-                cantidad_asientos: cantidad_asientos.value,
-                empresa_asignada: empresa_asignada.value,
-                conductor_id: conductorSeleccionado._rawValue.value
+    const validateInputs = () => {
+        const showBad = (errorMessage) => {
+            $q.notify({
+                spinner: false,
+                message: errorMessage,
+                timeout: 2000,
+                type: 'negative',
             });
-            limpiar();
-            obtenerInfo();
-            fixed.value = false;
+        };
+
+        if (!placa.value || typeof placa.value !== 'string' || !placa.value.trim()) {
+            showBad('Ingrese la Placa');
+            return false;
+        } else if (!numero_bus.value || typeof numero_bus.value !== 'string' || !numero_bus.value.trim()) {
+            showBad('Ingrese el número de bus');
+            return false;
+        } else if (!cantidad_asientos.value || typeof cantidad_asientos.value !== 'string' || !cantidad_asientos.value.trim()) {
+            showBad('Ingrese la cantidad de asientos');
+            return false;
+        } else if (!empresa_asignada.value || typeof empresa_asignada.value !== 'string' || !empresa_asignada.value.trim()) {
+            showBad('Ingrese la empresa asignada');
+            return false;
+        } else if (cambio.value === 1 && (!conductorSeleccionado.value || typeof conductorSeleccionado.value !== 'string')) {
+            showBad('Seleccione un conductor al editar');
+            return false;
+        }
+
+
+        return true;
+    };
+
+    const clearInputs = () => {
+        placa.value = '';
+        numero_bus.value = '';
+        cantidad_asientos.value = '';
+        empresa_asignada.value = '';
+        conductorSeleccionado.value = '';
+    };
+
+    if (cambio.value === 0) {
+        if (validateInputs()) {
+            try {
+                await busStore.postBus({
+                    placa: placa.value,
+                    numero_bus: numero_bus.value,
+                    cantidad_asientos: cantidad_asientos.value,
+                    empresa_asignada: empresa_asignada.value.trim(),
+                    conductor_id: conductorSeleccionado._rawValue.value,
+                });
+                $q.notify({
+                    spinner: false,
+                    message: 'Operación exitosa',
+                    timeout: 2000,
+                    type: 'positive',
+                });
+                clearInputs();
+                obtenerInfo();
+                fixed.value = false;
+                rows.value = [...buses.value].sort(
+                    (a, b) => new Date(b.createAT) - new Date(a.createAT)
+                );
+            } catch (error) {
+                $q.notify({
+                    spinner: false,
+                    message: 'Error al agregar el bus',
+                    timeout: 2000,
+                    type: 'negative',
+                });
+                console.error(error);
+            }
+        }
+    } else {
+        if (validateInputs()) {
+            let id = idBus.value;
+            if (id) {
+                try {
+                    await busStore.putEditarBus(id, {
+                        placa: placa.value,
+                        numero_bus: numero_bus.value,
+                        cantidad_asientos: cantidad_asientos.value,
+                        empresa_asignada: empresa_asignada.value,
+                        conductor_id: conductorSeleccionado._rawValue.value,
+                    });
+                    limpiar();
+                    obtenerInfo();
+                    fixed.value = false;
+                } catch (error) {
+                    console.error(error);
+                }
+            }
         }
     }
 }
 
 
 function limpiar() {
-    placa.value = "";
-    numero_bus.value = "";
-    cantidad_asientos.value = "";
-    empresa_asignada.value = "";
+    placa.value = '';
+    numero_bus.value = '';
+    cantidad_asientos.value = '';
+    empresa_asignada.value = '';
 }
 
 let idBus = ref('');
 async function EditarBus(id) {
-    cambio.value = 1;
     const busSeleccionado = buses.value.find((bus) => bus._id === id);
     if (busSeleccionado) {
         idBus.value = String(busSeleccionado._id);
@@ -220,6 +285,10 @@ async function EditarBus(id) {
         numero_bus.value = busSeleccionado.numero_bus;
         cantidad_asientos.value = busSeleccionado.cantidad_asientos;
         empresa_asignada.value = busSeleccionado.empresa_asignada;
+        conductorSeleccionado.value = {
+            label: `${busSeleccionado.conductor_id.nombre} - ${busSeleccionado.conductor_id.telefono} - ${busSeleccionado.conductor_id.cedula}`,
+            value: String(busSeleccionado.conductor_id._id)
+        }; 
     }
 }
 
@@ -250,9 +319,10 @@ function filtrarbuses() {
     margin: 0 auto;
 }
 
-h3{
+h3 {
     margin: 3px;
 }
+
 .q-table-container .q-td.opciones {
     text-align: center;
 }

@@ -92,7 +92,7 @@ async function obtenerInfo() {
   try {
     await conductorStore.getConductor();
     conductores.value = conductorStore.conductores;
-    rows.value = conductorStore.conductores;
+    rows.value = conductorStore.conductores.reverse();
     console.log(conductorStore);
   } catch (error) {
     console.error(error);

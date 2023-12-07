@@ -95,7 +95,7 @@ async function obtenerInfo() {
   try {
     await VendedorStore.getVendedor();
     vendedores.value = VendedorStore.vendedor;
-    rows.value = VendedorStore.vendedor;
+    rows.value = VendedorStore.vendedor.reverse();
   } catch (error) {
     console.log(error);
   }

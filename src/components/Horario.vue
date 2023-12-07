@@ -74,7 +74,7 @@ async function obtenerInfo() {
     try {
         await HorarioStore.getHorario();
         horarios.value = HorarioStore.horarios;
-        rows.value = HorarioStore.horarios;
+        rows.value = HorarioStore.horarios.reverse();
     } catch (error) {
         console.log(error);
     }
