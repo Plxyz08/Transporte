@@ -11,18 +11,20 @@ export default {
     const useAdmin = useAdminStore();
     const router = useRouter()
     const $q = useQuasar()
-    console.log(useAdmin.loading);
 
     async function iniciar() {
 
       let res = await useAdmin.login(cuenta.value, clave.value);
-      console.log(res);
+
       if (!useAdmin.token) {
         $q.notify({
           type: 'negative',
           message: res.response.data.msg
         });
       } else {
+
+        localStorage.setItem('usuario', JSON.stringify(res.data.vendedor));
+
         console.log("entra");
         router.push("/Card");
         $q.notify({

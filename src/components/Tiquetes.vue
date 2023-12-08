@@ -9,9 +9,8 @@
                     @click="seleccionarAsiento(asiento)" :class="{
                         'asiento-seleccionado': asientosSeleccionados.includes(asiento),
                         'asiento-reservado': asiento.reservado,
-                    }" :color="asientosSeleccionados.includes(asiento) ? 'primary' : 'white'"
-                    :disable="asientosSeleccionados.includes(asiento)" text-color="black"
-                    style="width: 50px; height: 60px;">
+                    }" :color="getColorForAsiento(asiento)" :disable="asientosSeleccionados.includes(asiento)"
+                    text-color="black" style="width: 50px; height: 60px;">
                     <q-icon v-if="asiento.reservado" :name="'check'" class="asiento-icon"
                         style="color: green; margin-left: 4px;" />
                     <q-icon v-else :name="'event_seat'" class="asiento-icon" style="margin-left: 4px;" />
@@ -19,12 +18,12 @@
             </div>
         </div>
 
-
         <div v-else>
             <q-btn @click="abrirModal" icon="add" color="primary" v-if="asientoSeleccionado === null">
                 Agregar venta
             </q-btn>
         </div>
+
 
         <!-- Modal para registrar venta -->
         <q-dialog v-model="mostrarModal" class="venta-dialog">
@@ -53,8 +52,10 @@
             <q-icon v-else-if="clienteEncontrado === false" name="clear" color="red" size="24px" />
             <q-btn v-if="asientoSeleccionado" type="submit" color="primary" label="Buscar cliente" @click="filtrarclientes"
                 class="q-ma-md"></q-btn>
-            <q-btn v-if="asientoSeleccionado" type="submit" color="primary" label="Agregar cliente" @click="agregarCliente"
-                class="q-ma-md"></q-btn>
+            <router-link to="/Clientes">
+                <q-btn v-if="asientoSeleccionado" type="submit" color="primary" label="Agregar cliente"
+                    @click="agregarCliente" class="q-ma-md"></q-btn>
+            </router-link>
             <form v-if="asientoSeleccionado" @submit.prevent="comprarBoleto">
                 <q-input type="text" id="cedula" v-model="buscarCedula" outlined label="Cédula" required
                     class="ml"></q-input>
@@ -85,15 +86,14 @@ const $q = useQuasar();
 const clienteStore = useClienteStore();
 const busStore = useBusStore();
 const ventasStore = useVentasStore();
-const vendedorStore = useVendedorStore();
 const adminStore = useAdminStore();
 const rutasStore = useRutasStore();
 const mostrarModal = ref(false);
 let buscarCedula = ref('');
 let clienteEncontrado = ref(null);
+let clienteSeleccionado = ref(null);
 let buses = ref([]);
 let rutas = ref([]);
-let vendedor = ref({});
 let ruta = ref('');
 let newCedula = ref();
 let newTelefono = ref();
@@ -104,7 +104,9 @@ let busSeleccionado = ref('');
 let fechaSalida = ref('');
 const mostrarAsientos = ref(false);
 let asientos = ref([]);
+let asientoColores = ({});
 let asientosSeleccionados = ref([]);
+const vendedor = JSON.parse(localStorage.getItem('usuario'));
 
 const cargarDatos = async () => {
     try {
@@ -146,22 +148,13 @@ const cargarDatos = async () => {
     } catch (error) {
 
     }
+};
 
-    try {
-        await vendedorStore.getVendedor();
-        const tokenDelVendedor = vendedorStore.vendedor.id.token;
-        console.log('Token del vendedor:', tokenDelVendedor);
-        console.log('Información del vendedor:', vendedorStore.vendedor_data);
-    } catch (error) {
-        console.error('Error vendedor', error);
-    }
-
-    try {
-        await adminStore.login();
-        
-
-    } catch (error) {
-
+const getColorForAsiento = (asiento) => {
+    if (asientoSeleccionado.value && asientoSeleccionado.value.numero === asiento) {
+        return 'green'; // Color verde para el asiento seleccionado
+    } else {
+        return asientoColores[asiento] || 'white';
     }
 };
 
@@ -192,6 +185,10 @@ const filtrarclientes = async () => {
     } catch (error) {
         console.error('Error al buscar el cliente:', error);
     }
+};
+
+const agregarCliente = () => {
+    this.$router.push('/Clientes');
 };
 
 const abrirModal = () => {
@@ -229,41 +226,45 @@ let asientoSeleccionado = ref(null);
 const seleccionarAsiento = (asiento) => {
     asientoSeleccionado.value = {
         numero: asiento,
-        
     };
-    /* mostrarAsientos.value = false; */
+    // Actualizar solo el color del asiento seleccionado
+    asientoColores = {
+        ...asientoColores,
+        [asiento]: 'green',
+    };
 };
 
 const confirmarCompra = async () => {
-    if (clienteEncontrado.value == true) {
-        try {
-            // Asegúrate de que vendedorStore.vendedor existe y tiene la propiedad token
-            if (!vendedorStore.vendedor || !vendedorStore.vendedor_data.token) {
-                console.error('Token del vendedor no definido en confirmarCompra');
-                return;
-            }
+    console.log('Ruta:', ruta);
+    console.log('Bus seleccionado:', busSeleccionado);
+    console.log('Fecha de salida:', fechaSalida);
 
-            const vendedor_id = vendedorStore.vendedor.token;
-            console.log('Información del token:', vendedor_id);
+    try {
+        const ventaData = {
+            vendedor_id: vendedor._id,
+            cliente_id: clienteSeleccionado.value,
+            bus_id: busSeleccionado.value,
+            no_asiento: asientoSeleccionado.value,
+            fecha_departida: fechaSalida.value,
+        };
 
-            const data = {
-                vendedor_id: String(vendedor.vendedor._id),
-                cliente_id: cliente_id.value,
-                ruta_id: ruta._rawValue.value,
-                bus_id: bus._rawValue.value,
-                no_asiento: no_asiento.value,
-                fecha_departida: fecha_departida.value,
-            };
+        console.log('Datos de la venta:', ventaData);
+        let res = await ventasStore.postTicket(ventaData);
 
-            await ventasStore.postTicket(data);
+        if (res.data.ticket._id) {
+            clienteSeleccionado.value = null;
+            busSeleccionado.value = {};
+            asientoSeleccionado.value = {};
+            fechaSalida.value = null;
+            newCedula.value = null;
+            newNombre.value = null;
+            newTelefono.value = null;
 
-            greatMessage.value = "Ticket creado exitosamente";
+            greatMessage.value = "Ticket registrado con éxito";
             showGreat();
-        } catch (error) {
-            console.error('Error al confirmar la compra:', error);
-            badMessage.value = error.response.data.error.errors[0].msg || "Error al crear ticket";
-            showBad();
         }
+    } catch (error) {
+        console.error('Error adding ticket:', error.response.status, error.response.data);
     }
 };
 
@@ -339,8 +340,7 @@ h3 {
 }
 
 .asiento-seleccionado {
-    background-color: blue !important;
-    /* Ajusta el color según tu preferencia */
+    background-color: green !important;
 }
 </style>
   

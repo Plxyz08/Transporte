@@ -8,10 +8,11 @@
 
                     <!-- "Agregar Ticket" button -->
                     <div class="btn-agregar">
-                        <q-btn color="primary" label="Agregar" @click="agregarCliente()" />
+                        <router-link to="/Tiquetes">
+                            <q-btn color="primary" label="Agregar" @click="agregarTicket()" />
+                        </router-link>
                     </div>
 
-                    <!-- "Buscar por cedula" input and "Buscar" button -->
                     <div style="display: flex; align-items: center;">
                         <q-input v-model="buscarFecha" label="Buscar por fecha"
                             style="width: 300px; border-radius: 10px; background-color: azure; margin-right: 10px;" />
@@ -36,7 +37,7 @@
                     <q-select v-model="selectedTicket.bus" :options="Buses" label="Bus" />
                     <q-select v-model="selectedTicket.vendedor" :options="Vendedores" label="Vendedor" />
                     <q-input type="number" v-model="selectedTicket.no_asiento" label="N° asiento" />
-                    <q-input type="date" v-model="selectedTicket.fecha_departida" label="Fecha de partida" />
+                    <q-input type="date" v-model="formattedFechaDepartida" label="Fecha de partida" />
                 </q-card-section>
 
                 <q-separator />
@@ -51,7 +52,7 @@
     </div>
     <div class="q-pa-md">
         <q-table title="Tickets" :rows="tickets.ticket" :columns="columns" row-key="name" virtual-scroll
-            v-model:pagination="pagination">
+            v-model:pagination="pagination" :sort-method="sortTickets">
             <template v-slot:body-cell-estado="props">
                 <q-td :props="props">
                     <label for="" v-if="props.row.estado == 1" style="color: green">Activo</label>
@@ -77,13 +78,14 @@
 </template>
   
 <script>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, computed } from 'vue';
 import { format } from 'date-fns';
 import html2pdf from 'html2pdf.js';
 import { useVentasStore } from '../stores/ventas';
 import { useClienteStore } from '../stores/clientes';
 import { useBusStore } from '../stores/buses';
 import { useVendedorStore } from '../stores/vendedor';
+import { useRutasStore } from '../stores/rutas';
 
 const columns = [
     { name: "cliente_id", label: "Info Cliente", field: (row) => `${row.cliente_id.nombre} - ${row.cliente_id.cedula}- ${row.cliente_id.telefono}`, },
@@ -104,15 +106,34 @@ export default {
         const clientesStore = useClienteStore();
         const busStore = useBusStore();
         const vendedorStore = useVendedorStore();
+        const rutasStore = useRutasStore();
         const tickets = ref([]);
         const Clientes = ref([]);
         const Buses = ref([]);
         const Vendedores = ref([]);
+        const Rutas = ref([]);
         const selectedTicket = ref(null);
         const fixed = ref(false);
         const pagination = ref({});
         const buscarFecha = ref('');
         const fecha_departida = ref(null);
+
+        const sortTickets = (a, b, sortBy) => {
+            if (sortBy === 'createAT') {
+                const dateA = new Date(a[sortBy]);
+                const dateB = new Date(b[sortBy]);
+                return dateB - dateA; 
+            }
+            return 0; 
+        };
+
+        const agregarTicket = () => {
+            this.$router.push('agregarTicket');
+        };
+
+        const formattedFechaDepartida = computed(() => {
+            return format(new Date(selectedTicket.value.fecha_departida), 'yyyy-MM-dd');
+        });
 
         const obtenerInfo = async () => {
             await ventasStore.getTicket();
@@ -125,24 +146,25 @@ export default {
                 Clientes.value = clientesStore.clientes.map((cliente) => ({
                     label: `${cliente.nombre} - ${cliente.cedula} - ${cliente.telefono}`,
                     value: String(cliente._id),
-                }))
+                    data: cliente,
+                }));
             } catch (error) {
-                console.log(error);
+                console.error('Error obtaining clients:', error);
             }
-
         };
 
         const obtenerBuses = async () => {
             try {
                 await busStore.getBuses();
                 Buses.value = busStore.buses.map((bus) => ({
-                    label: `${bus.placa} - ${bus.empresa_asignada} - ${bus.numero_bus}`,
+                    label: `${bus.placa} - ${bus.empresa_asignada} - N°${bus.numero_bus}`,
+                    cantidad_asientos: bus.cantidad_asientos,
                     value: String(bus._id),
-                }))
+                    data: bus,
+                }));
             } catch (error) {
-                console.log(error);
+                console.error('Error obtaining buses:', error);
             }
-
         };
 
         const obtenerVendedores = async () => {
@@ -151,51 +173,71 @@ export default {
                 Vendedores.value = vendedorStore.vendedor.map((vendedor) => ({
                     label: `${vendedor.nombre} - ${vendedor.telefono}`,
                     value: String(vendedor._id),
-                }))
+                    data: vendedor, // Store the actual seller object
+                }));
             } catch (error) {
-                console.log(error);
+                console.error('Error obtaining sellers:', error);
             }
-
         };
 
+        const obtenerRutas = async () => {
+            try {
+                await rutasStore.getRuta();
+                Rutas.value = rutasStore.rutas.map((ruta) => ({
+                    label: `${ruta.origen} - ${ruta.destino} - ${ruta.horario_id.hora_partida} - ${ruta.horario_id.hora_llegada}`,
+                    value: String(ruta._id),
+                    data: ruta, // Store the actual seller object
+                }));
+            } catch (error) {
+                console.error('Error obtaining sellers:', error);
+            }
+        };
+
+
         const editarTicket = async (id) => {
-            // Find the selected ticket by ID
             const selectedTicketData = tickets.value.ticket.find((ticket) => ticket._id === id);
+            /* console.log('Selected Ticket Data:', selectedTicketData); */
 
-            // Make sure the selected ticket is found
             if (selectedTicketData) {
-                // Copy data from selected ticket to selectedTicket ref
-                selectedTicket.value = {
-                    cliente: selectedTicketData.cliente_id._id, 
-                    bus: selectedTicketData.bus_id._id, 
-                    vendedor: selectedTicketData.vendedor_id._id, 
-                    no_asiento: selectedTicketData.no_asiento,
-                    fecha_departida: selectedTicketData.fecha_departida,
-                };
+                try {
+                    await Promise.all([
+                        obtenerClientes(selectedTicketData.cliente_id),
+                        obtenerBuses(selectedTicketData.bus_id),
+                        obtenerVendedores(selectedTicketData.vendedor_id),
+                        obtenerRutas(selectedTicketData.ruta_id),
 
-                // Load additional data
-                await Promise.all([obtenerClientes(), obtenerBuses(), obtenerVendedores()]);
+                    ]);
 
-                // Access properties from the selected ticket and do something with them
-                console.log(selectedTicket.value.fecha_departida);
+                    /* console.log('Clientes:', Clientes.value);
+                    console.log('Buses:', Buses.value);
+                    console.log('Vendedores:', Vendedores.value);
+                    console.log('Rutas:', Rutas.value); */
 
-                // Set fixed to true
-                fixed.value = true;
+                    selectedTicket.value = {
+                        cliente: Clientes.value.find((cliente) => cliente.value === selectedTicketData.cliente_id._id),
+                        bus: Buses.value.find((bus) => bus.value === selectedTicketData.bus_id._id),
+                        vendedor: Vendedores.value.find((vendedor) => vendedor.value === selectedTicketData.vendedor_id._id),
+                        no_asiento: selectedTicketData.no_asiento,
+                        fecha_departida: selectedTicketData.fecha_departida,
+                    };
+
+                    fixed.value = true;
+                } catch (error) {
+                    console.error('Error loading additional data:', error);
+                }
             } else {
                 console.error('Selected ticket not found');
             }
         };
 
-
+        const EditarTicket = async () => {
+            await editarTicket(selectedTicket.value._id);
+            closeModal();
+        };
 
         const closeModal = () => {
             selectedTicket.value = null;
             fixed.value = false;
-        };
-
-        const EditarTicket = async () => {
-
-            closeModal();
         };
 
         const ActivarTicket = async (id) => {
@@ -217,19 +259,15 @@ export default {
 
                 await nextTick();
 
-                // Estilo para el contenedor principal
                 container.style.maxWidth = '600px';
                 container.style.margin = 'auto';
                 container.style.padding = '20px';
                 container.style.border = '1px solid #ccc';
-                container.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
 
-                // Estilo para el contenido
                 content.style.fontFamily = 'Arial, sans-serif';
                 content.style.fontSize = '16px';
                 content.style.lineHeight = '1.6';
 
-                // Añade detalles específicos del ticket al contenido
                 content.innerHTML = `
       <h2 style="text-align: center;">Detalles del Ticket</h2>
       <p><strong>Cliente:</strong> ${ticketSeleccionado.cliente_id.nombre}</p>
@@ -250,8 +288,22 @@ export default {
             }
         };
 
-        const filtrarTickets = async () => {
-            await ventasStore.buscarTickets
+        function filtrarTickets() {
+            console.log('Buscar Fecha:', buscarFecha);
+
+            if (ventasStore.tickets && Array.isArray(ventasStore.tickets)) {
+                if (typeof buscarFecha.value === 'string' && buscarFecha.value.trim() === "") {
+                    tickets.value = ventasStore.tickets;
+                } else {
+                    tickets.value = ventasStore.tickets.filter((ticket) => {
+                        const fechaCreacion = new Date(ticket.createAT).toLocaleDateString();
+                        console.log('Fecha de Creación del Ticket:', fechaCreacion);
+                        return fechaCreacion.includes(buscarFecha);
+                    });
+                }
+            } else {
+                console.error('ventasStore.tickets no es un array o no está definido.');
+            }
         }
 
         onMounted(() => {
@@ -281,6 +333,9 @@ export default {
             filtrarTickets,
             buscarFecha,
             fecha_departida,
+            formattedFechaDepartida,
+            agregarTicket,
+            sortTickets,
         };
     },
 };
