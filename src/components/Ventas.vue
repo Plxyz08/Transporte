@@ -331,10 +331,6 @@ export default {
 
         });
 
-        onMounted(async () => {
-            fecha_departida.value = await fetchData();
-        });
-
         return {
             columns,
             tickets,

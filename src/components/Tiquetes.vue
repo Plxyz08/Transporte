@@ -148,7 +148,7 @@ const cargarDatos = async () => {
 };
 
 const getColorForAsiento = (asiento) => {
-    if (asientoSeleccionado.value && asientoSeleccionado.value.numero === asiento) {
+    if (asientoSeleccionado.value && asientoSeleccionado.value.numero == asiento) {
         return 'green'; 
     } else {
         return asientoColores[asiento] || 'white';
