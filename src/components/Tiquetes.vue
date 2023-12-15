@@ -91,13 +91,10 @@ const rutasStore = useRutasStore();
 const mostrarModal = ref(false);
 let buscarCedula = ref('');
 let clienteEncontrado = ref(null);
-let clienteSeleccionado = ref(null);
+let clienteSeleccionado = ref([]);
 let buses = ref([]);
 let rutas = ref([]);
 let ruta = ref('');
-let newCedula = ref();
-let newTelefono = ref();
-let newNombre = ref("");
 let telefono = ref();
 let nombre = ref("");
 let busSeleccionado = ref('');
@@ -152,7 +149,7 @@ const cargarDatos = async () => {
 
 const getColorForAsiento = (asiento) => {
     if (asientoSeleccionado.value && asientoSeleccionado.value.numero === asiento) {
-        return 'green'; // Color verde para el asiento seleccionado
+        return 'green'; 
     } else {
         return asientoColores[asiento] || 'white';
     }
@@ -235,36 +232,31 @@ const seleccionarAsiento = (asiento) => {
 };
 
 const confirmarCompra = async () => {
-    console.log('Ruta:', ruta);
-    console.log('Bus seleccionado:', busSeleccionado);
-    console.log('Fecha de salida:', fechaSalida);
-
     try {
-        const ventaData = {
-            vendedor_id: vendedor._id,
-            cliente_id: clienteSeleccionado.value,
-            bus_id: busSeleccionado.value,
-            no_asiento: asientoSeleccionado.value,
-            fecha_departida: fechaSalida.value,
-        };
-
-        console.log('Datos de la venta:', ventaData);
-        let res = await ventasStore.postTicket(ventaData);
-
+        let res = await ventasStore.postTicket({
+            'vendedor_id': vendedor._id,
+            'cliente_id': clienteSeleccionado.value,
+            'bus_id': busSeleccionado.value.id,
+            'no_asiento': asientoSeleccionado.value.numero,
+            'fecha_departida': fechaSalida.value,
+        })
         if (res.data.ticket._id) {
-            clienteSeleccionado.value = null;
-            busSeleccionado.value = {};
-            asientoSeleccionado.value = {};
-            fechaSalida.value = null;
-            newCedula.value = null;
-            newNombre.value = null;
-            newTelefono.value = null;
+
+            clienteSeleccionado.value = null
+            busSeleccionado.value = {}
+            asientoSeleccionado.value = {}
+            fechaSalida.value = null
+            newCedula.value = null
+            newNombre.value = null
+            newTelefono.value = null
 
             greatMessage.value = "Ticket registrado con éxito";
             showGreat();
+
         }
+
     } catch (error) {
-        console.error('Error adding ticket:', error.response.status, error.response.data);
+        console.error(error)
     }
 };
 

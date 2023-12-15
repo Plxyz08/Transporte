@@ -122,9 +122,9 @@ export default {
             if (sortBy === 'createAT') {
                 const dateA = new Date(a[sortBy]);
                 const dateB = new Date(b[sortBy]);
-                return dateB - dateA; 
+                return dateB - dateA;
             }
-            return 0; 
+            return 0;
         };
 
         const agregarTicket = () => {
@@ -196,7 +196,7 @@ export default {
 
         const editarTicket = async (id) => {
             const selectedTicketData = tickets.value.ticket.find((ticket) => ticket._id === id);
-            /* console.log('Selected Ticket Data:', selectedTicketData); */
+            console.log('Selected Ticket Data:', selectedTicketData);
 
             if (selectedTicketData) {
                 try {
@@ -205,13 +205,7 @@ export default {
                         obtenerBuses(selectedTicketData.bus_id),
                         obtenerVendedores(selectedTicketData.vendedor_id),
                         obtenerRutas(selectedTicketData.ruta_id),
-
                     ]);
-
-                    /* console.log('Clientes:', Clientes.value);
-                    console.log('Buses:', Buses.value);
-                    console.log('Vendedores:', Vendedores.value);
-                    console.log('Rutas:', Rutas.value); */
 
                     selectedTicket.value = {
                         cliente: Clientes.value.find((cliente) => cliente.value === selectedTicketData.cliente_id._id),
@@ -219,6 +213,7 @@ export default {
                         vendedor: Vendedores.value.find((vendedor) => vendedor.value === selectedTicketData.vendedor_id._id),
                         no_asiento: selectedTicketData.no_asiento,
                         fecha_departida: selectedTicketData.fecha_departida,
+                        data: selectedTicketData,
                     };
 
                     fixed.value = true;
@@ -231,13 +226,38 @@ export default {
         };
 
         const EditarTicket = async () => {
-            await editarTicket(selectedTicket.value._id);
-            closeModal();
+            try {
+                console.log('Editing Ticket:', selectedTicket);
+
+                if (!selectedTicket || !selectedTicket.data) {
+                    console.error('Selected ticket or its data is undefined.');
+                    return;
+                }
+
+                const response = await ventasStore.putEditarTicket(selectedTicket.data._id, {
+                    cliente_id: selectedTicket.cliente.value,
+                    bus_id: selectedTicket.bus.value,
+                    vendedor_id: selectedTicket.vendedor.value,
+                    no_asiento: selectedTicket.no_asiento,
+                    fecha_departida: selectedTicket.fecha_departida,
+                });
+
+                console.log('Response:', response);
+                const updatedIndex = tickets.value.ticket.findIndex((ticket) => ticket._id === selectedTicket.data._id);
+                if (updatedIndex !== -1) {
+                    tickets.value.ticket[updatedIndex] = response.data.updatedTicket;
+                }
+
+                closeModal();
+            } catch (error) {
+                console.error('Error editing ticket:', error);
+            }
         };
 
         const closeModal = () => {
             selectedTicket.value = null;
             fixed.value = false;
+            obtenerInfo();
         };
 
         const ActivarTicket = async (id) => {
@@ -289,16 +309,16 @@ export default {
         };
 
         function filtrarTickets() {
-            console.log('Buscar Fecha:', buscarFecha);
+            console.log('Buscar Fecha:', buscarFecha.value);
 
-            if (ventasStore.tickets && Array.isArray(ventasStore.tickets)) {
+            if (ventasStore.tickets && Array.isArray(ventasStore.tickets.ticket)) {
                 if (typeof buscarFecha.value === 'string' && buscarFecha.value.trim() === "") {
-                    tickets.value = ventasStore.tickets;
+                    tickets.value = ventasStore.tickets.ticket;
                 } else {
-                    tickets.value = ventasStore.tickets.filter((ticket) => {
-                        const fechaCreacion = new Date(ticket.createAT).toLocaleDateString();
+                    tickets.value = ventasStore.tickets.ticket.filter((ticket) => {
+                        const fechaCreacion = format(new Date(ticket.createAT), 'yyyy-MM-dd');
                         console.log('Fecha de Creación del Ticket:', fechaCreacion);
-                        return fechaCreacion.includes(buscarFecha);
+                        return fechaCreacion === buscarFecha.value;
                     });
                 }
             } else {

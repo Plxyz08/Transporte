@@ -9,10 +9,10 @@ export const useVentasStore = defineStore('ticket', () => {
     try {
       let res = await axios.get('/ticket/ticket');
 
-      console.log('Axios Response:', res);
+      /* console.log('Axios Response:', res); */
 
       if (res && res.data) {
-        console.log('Full API Response:', res);
+       /*  console.log('Full API Response:', res); */
 
         tickets.value = res.data;
 
