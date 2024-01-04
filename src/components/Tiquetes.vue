@@ -40,7 +40,11 @@
                 <q-card-actions align="right">
                     <q-btn flat label="Cancelar" color="negative" v-close-popup></q-btn>
                     <q-btn flat label="Guardar" color="primary" @click="guardarVentaYMostrarAsientos"
-                        :disable="!formularioValido" />
+                        :disable="!formularioValido" :loading="formularioValido.loading">
+                        <template v-slot:loading>
+                            <q-spinner-hourglass />
+                        </template>
+                    </q-btn>
                 </q-card-actions>
             </q-card>
         </q-dialog>
@@ -112,18 +116,15 @@ const cargarDatos = async () => {
             .filter((value) => value.estado)
             .map((bus) => {
                 return {
-                    value: String(bus._id),
+                    value: bus.placa,
                     label: `${bus.placa} - ${bus.empresa_asignada} - (${bus.cantidad_asientos} asientos)`,
                     cantidad_asientos: bus.cantidad_asientos,
                     estado: bus.estado,
-
                 };
             });
     } catch (error) {
         console.error('Error al cargar la lista de placas de los buses:', error);
     }
-
-    // bus_id: bus.bus_id,
 
     try {
         await rutasStore.getRuta();
@@ -144,7 +145,6 @@ const cargarDatos = async () => {
 
     try {
         await clienteStore.getCliente();
-        clientes.value = clienteStrore.clientes
         /* console.log('Clientes:', clienteStore.clientes); */
     } catch (error) {
 
@@ -159,7 +159,6 @@ const getColorForAsiento = (asiento) => {
     }
 };
 
-let cliente_id = ref("")
 const filtrarclientes = async () => {
     try {
         const cedulaBuscada = buscarCedula.value;
@@ -173,11 +172,8 @@ const filtrarclientes = async () => {
             buscarCedula.value = clienteEncontrado.cedula;
             telefono.value = clienteEncontrado.telefono;
             nombre.value = clienteEncontrado.nombre;
-            cliente_id.value = clienteEncontrado._id;
 
-            clienteSeleccionado.value.push(clienteEncontrado);
             clienteEncontrado.value = true;
-
             greatMessage.value = "Cliente encontrado";
             showGreat();
             /* console.log('Cliente encontrado:', clienteEncontrado); */
@@ -212,12 +208,17 @@ const validarFecha = (dateString) => {
 };
 
 const guardarVentaYMostrarAsientos = async () => {
+    formularioValido.value.loading = true;  
+
     try {
-        cargarAsientos(busSeleccionado.value.cantidad_asientos);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await cargarAsientos(busSeleccionado.value.cantidad_asientos);
         mostrarAsientos.value = true;
         mostrarModal.value = false;
     } catch (error) {
         console.error('Error:', error);
+    } finally {
+        formularioValido.value.loading = false;  // Finaliza la carga, ya sea exitosa o con error
     }
 };
 
@@ -242,29 +243,29 @@ const seleccionarAsiento = (asiento) => {
 const confirmarCompra = async () => {
     try {
         let res = await ventasStore.postTicket({
-            'vendedor_id': String(vendedor._id),
-            'cliente_id': clienteSeleccionado.value[0]._id,
-            'bus_id': busSeleccionado._rawValue.value,
+            'vendedor_id': vendedor._id,
+            'cliente_id': clienteSeleccionado.value,
+            'bus_id': busSeleccionado.value.id,
             'no_asiento': asientoSeleccionado.value.numero,
             'fecha_departida': fechaSalida.value,
-        });
-
+        })
         if (res.data.ticket._id) {
-            // Limpiar los datos
+
             clienteSeleccionado.value = null
             busSeleccionado.value = {}
             asientoSeleccionado.value = {}
             fechaSalida.value = null
-            buscarCedula.value = ""
-            nombre.value = ""
-            telefono.value = ""
+            newCedula.value = null
+            newNombre.value = null
+            newTelefono.value = null
 
-            // Mostrar mensaje de éxito
             greatMessage.value = "Ticket registrado con éxito";
             showGreat();
+
         }
+
     } catch (error) {
-        console.error(error);
+        console.error(error)
     }
 };
 
@@ -296,11 +297,16 @@ const cancelShow = () => {
     }
 }
 
-const formularioValido = ref(false);
+const formularioValido = ref({
+    value: false,
+    loading: false,
+});
 
 watch([ruta, busSeleccionado, fechaSalida], () => {
-    formularioValido.value = validarFecha(fechaSalida.value) &&
-        ruta !== '' && busSeleccionado !== '';
+    formularioValido.value = {
+        value: validarFecha(fechaSalida.value) && ruta !== '' && busSeleccionado !== '',
+        loading: false,  // Reinicia el estado de carga al cambiar los datos
+    };
 });
 </script>
   
