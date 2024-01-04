@@ -116,7 +116,7 @@ const cargarDatos = async () => {
             .filter((value) => value.estado)
             .map((bus) => {
                 return {
-                    value: bus.placa,
+                    value: String(bus._id),
                     label: `${bus.placa} - ${bus.empresa_asignada} - (${bus.cantidad_asientos} asientos)`,
                     cantidad_asientos: bus.cantidad_asientos,
                     estado: bus.estado,
@@ -145,6 +145,7 @@ const cargarDatos = async () => {
 
     try {
         await clienteStore.getCliente();
+        clientes.value = clienteStrore.clientes
         /* console.log('Clientes:', clienteStore.clientes); */
     } catch (error) {
 
@@ -159,6 +160,7 @@ const getColorForAsiento = (asiento) => {
     }
 };
 
+let cliente_id = ref("")
 const filtrarclientes = async () => {
     try {
         const cedulaBuscada = buscarCedula.value;
@@ -172,8 +174,11 @@ const filtrarclientes = async () => {
             buscarCedula.value = clienteEncontrado.cedula;
             telefono.value = clienteEncontrado.telefono;
             nombre.value = clienteEncontrado.nombre;
+            cliente_id.value = clienteEncontrado._id;
 
+            clienteSeleccionado.value.push(clienteEncontrado);
             clienteEncontrado.value = true;
+
             greatMessage.value = "Cliente encontrado";
             showGreat();
             /* console.log('Cliente encontrado:', clienteEncontrado); */
@@ -208,7 +213,7 @@ const validarFecha = (dateString) => {
 };
 
 const guardarVentaYMostrarAsientos = async () => {
-    formularioValido.value.loading = true;  
+    formularioValido.value.loading = true;
 
     try {
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -243,29 +248,29 @@ const seleccionarAsiento = (asiento) => {
 const confirmarCompra = async () => {
     try {
         let res = await ventasStore.postTicket({
-            'vendedor_id': vendedor._id,
-            'cliente_id': clienteSeleccionado.value,
-            'bus_id': busSeleccionado.value.id,
+            'vendedor_id': String(vendedor._id),
+            'cliente_id': clienteSeleccionado.value[0]._id,
+            'bus_id': busSeleccionado._rawValue.value,
             'no_asiento': asientoSeleccionado.value.numero,
             'fecha_departida': fechaSalida.value,
-        })
-        if (res.data.ticket._id) {
+        });
 
+        if (res.data.ticket._id) {
+            // Limpiar los datos
             clienteSeleccionado.value = null
             busSeleccionado.value = {}
             asientoSeleccionado.value = {}
             fechaSalida.value = null
-            newCedula.value = null
-            newNombre.value = null
-            newTelefono.value = null
+            buscarCedula.value = ""
+            nombre.value = ""
+            telefono.value = ""
 
+            // Mostrar mensaje de éxito
             greatMessage.value = "Ticket registrado con éxito";
             showGreat();
-
         }
-
     } catch (error) {
-        console.error(error)
+        console.error(error);
     }
 };
 
